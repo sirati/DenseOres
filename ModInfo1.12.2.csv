@@ -1,0 +1,27 @@
+Mod,Registry name,Display name,Backdrop,Properties,
+appliedenergistic,appliedenergistics2:charged_quartz_ore,Charged Certus Quartz Ore,blocks/stone,,
+appliedenergistic,appliedenergistics2:quartz_ore,Certus Quartz Ore,blocks/stone,,
+biomesoplenty,biomesoplenty:biome_block,Biome Essence Ore,blocks/end_stone,,
+biomesoplenty,biomesoplenty:gem_ore,Ender Amethyst Ore,blocks/end_stone,variant,amethyst
+biomesoplenty,biomesoplenty:gem_ore,Ruby Ore,blocks/stone,variant,ruby
+biomesoplenty,biomesoplenty:gem_ore,Peridot Ore,blocks/stone,variant,peridot
+biomesoplenty,biomesoplenty:gem_ore,Topaz Ore,blocks/stone,variant,topaz
+biomesoplenty,biomesoplenty:gem_ore,Tanzanite Ore,blocks/stone,variant,tanzanite
+biomesoplenty,biomesoplenty:gem_ore,Malachite Ore,blocks/stone,variant,malachite
+enderore,enderore:ore_ender,Ender Ore,blocks/stone,,
+thaumcraft,thaumcraft:ore_cinnabar,Cinnabar Ore,blocks/stone,,
+thaumcraft,thaumcraft:ore_quartz,Quartz Ore,blocks/stone,,
+thermalfoundation,thermalfoundation:ore,Copper Ore,blocks/stone,type,copper
+thermalfoundation,thermalfoundation:ore,Tin Ore,blocks/stone,type,tin
+thermalfoundation,thermalfoundation:ore,Silver Ore,blocks/stone,type,silver
+thermalfoundation,thermalfoundation:ore,Lead Ore,blocks/stone,type,lead
+thermalfoundation,thermalfoundation:ore,Aluminum Ore,blocks/stone,type,aluminum
+thermalfoundation,thermalfoundation:ore,Nickel Ore,blocks/stone,type,nickel
+thermalfoundation,thermalfoundation:ore_fluid,Destabilized Redstone Ore,blocks/stone,type,redstone
+thermalfoundation,thermalfoundation:ore_fluid,Energized Netherrack,blocks/netherrack,type,glowstone
+thermalfoundation,thermalfoundation:ore_fluid,Resonant End Stone,blocks/end_stone,type,ender
+thermalfoundation,thermalfoundation:ore_fluid,Sand Crude Oil,blocks/sand,type,crude_oil_sand
+thermalfoundation,thermalfoundation:ore_fluid,Red Sand Crude Oil,blocks/red_sand,type,crude_oil_red_sand
+thermalfoundation,thermalfoundation:ore_fluid,Gravel Sand Crude Oil,blocks/gravel,type,crude_oil_gravel
+tinkers construct,tconstruct:ore,Cobalt Ore,blocks/netherrack,type,cobalt
+tinkers construct,tconstruct:ore,Ardite Ore,blocks/netherrack,type,ardite

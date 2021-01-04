@@ -52,7 +52,7 @@ public class DenseOre {
 		this.baseBlock = new ResourceLocation(baseBlock.toString().toLowerCase());
 		this.propertyLookup = propertyLookup;
 		this.underlyingBlockTexture = underlyingBlock.toString().toLowerCase();
-		this.texture = texture.toString().toLowerCase();
+		this.texture = texture == null ? null:texture.toLowerCase();
 		this.retroGenId = retroGenId;
 		this.rendertype = renderType;
 		this.block = new BlockDenseOre(this);
