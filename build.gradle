@@ -11,28 +11,17 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.0'
     }
 
 }
-plugins {
-    id 'com.github.johnrengelman.shadow' version '4.0.0'
-    id 'java'
-}
-shadowJar {
-    dependencies {
-        exclude(dependency {
-            it.moduleGroup != 'org.spongepowered'
-        })
-    }
-}
+
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'com.github.johnrengelman.shadow'
+
 //Only edit below this line, the above code adds and enables the nessasary things for Forge to be setup.
 
 
-version = "1.0.6"
+version = "1.1.0.0-alpha1"
 group= "com.rwtema.denseores" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "denseores-1.12.2"
 
@@ -84,8 +73,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
-    compile 'org.spongepowered:mixin:0.8.2'
+    minecraft ('net.minecraftforge:forge:1.12.2-14.23.5.2854')  {
+        exclude group: 'org.apache.commons', module: 'commons-lang3' //we are using out own validate
+    }
+    compile ('org.spongepowered:mixin:0.8.2') {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
     annotationProcessor 'org.spongepowered:mixin:0.8:processor'
 }
 
