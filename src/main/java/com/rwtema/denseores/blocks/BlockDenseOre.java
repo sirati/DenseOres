@@ -8,6 +8,7 @@ import com.rwtema.denseores.blockaccess.BlockAccessSingleOverride;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -382,16 +383,27 @@ public class BlockDenseOre extends Block {
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
 		baseBlock.onBlockAdded(worldIn, pos, baseBlockState);
+		if (baseBlock instanceof BlockFalling) {
+			worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+		}
 	}
 
 	@Override
-	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
-		baseBlock.onNeighborChange(new FakeWorld(world, pos, baseBlockState), pos, neighbor);
+	public void observedNeighborChange(IBlockState observerState, World world, BlockPos observerPos, Block changedBlock, BlockPos changedBlockPos) {
+		baseBlock.observedNeighborChange(baseBlockState, world, observerPos, changedBlock, changedBlockPos);
+		if (baseBlock instanceof BlockFalling) {
+			world.scheduleUpdate(observerPos, this, this.tickRate(world));
+		}
 	}
 
 	@Override
 	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
 		baseBlock.updateTick(worldIn, pos, baseBlockState, rand);
+	}
+
+	@Override
+	public int tickRate(World worldIn) {
+		return baseBlock.tickRate(worldIn);
 	}
 
 	private static class FakeWorld implements IBlockAccess {
