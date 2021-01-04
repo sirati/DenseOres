@@ -16,7 +16,7 @@ You can also find individual example configs for common mods at <a href="https:/
 
 <b>Config Info</b><br>
 <i>S:baseBlock</i> - The ore block that you wish to replace. This is in the form modid:blockname<br>
-<i>I:baseBlockProperties</i> - The set of properties defining the blockstate/block sub variant. As seen when looking at the block in F3
+<i>I:baseBlockProperties</i> - The set of properties defining the blockstate/block sub variant. As seen when looking at the block in F3<br>
 <i>S:baseBlockTexture</i> - The ores texture name (as found in assets/modid/textures/blocks)<br>
 <i>D:denseOreProbability</i> - Currently unused.<br>
 <i>I:renderType</i> - This changes the way the texture generation works (see <a href="https://i.imgur.com/CGfhSss.png">here</a> for details).<br>
