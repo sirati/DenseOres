@@ -379,6 +379,21 @@ public class BlockDenseOre extends Block {
 		return baseBlock.getSoundType();
 	}
 
+	@Override
+	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+		baseBlock.onBlockAdded(worldIn, pos, baseBlockState);
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		baseBlock.onNeighborChange(new FakeWorld(world, pos, baseBlockState), pos, neighbor);
+	}
+
+	@Override
+	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+		baseBlock.updateTick(worldIn, pos, baseBlockState, rand);
+	}
+
 	private static class FakeWorld implements IBlockAccess {
 		private final IBlockAccess wrapped;
 		private final BlockPos pos;
