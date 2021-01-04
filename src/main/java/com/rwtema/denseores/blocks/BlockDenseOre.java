@@ -8,23 +8,29 @@ import com.rwtema.denseores.blockaccess.BlockAccessSingleOverride;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /*  I'm using the MAX_METADATA metadata values to store each ore block.
@@ -311,5 +317,119 @@ public class BlockDenseOre extends Block {
 	public String getHarvestTool(@Nonnull IBlockState state) {
 		IBlockState baseState = getBaseBlockState();
 		return baseState.getBlock().getHarvestTool(baseState);
+	}
+
+	@Override
+	public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
+		baseBlock.onBlockHarvested(worldIn, pos, baseBlockState, player);
+	}
+
+	@Override
+	public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+		return baseBlock.removedByPlayer(baseBlockState, world, pos, player, willHarvest);
+	}
+
+	@Override
+	public boolean canProvidePower(IBlockState state) {
+		return baseBlock.canProvidePower(baseBlockState);
+	}
+
+	@Override
+	public boolean isFlammable(IBlockAccess world, BlockPos pos, EnumFacing face) {
+		return baseBlock.isFlammable(new FakeWorld(world, pos, baseBlockState), pos, face);
+	}
+
+	@Override
+	public int getFireSpreadSpeed(IBlockAccess world, BlockPos pos, EnumFacing face) {
+		return baseBlock.getFireSpreadSpeed(new FakeWorld(world, pos, baseBlockState), pos, face);
+	}
+
+	@Override
+	public int getFlammability(IBlockAccess world, BlockPos pos, EnumFacing face) {
+		return baseBlock.getFlammability(new FakeWorld(world, pos, baseBlockState), pos, face);
+	}
+
+	@Override
+	public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+		return baseBlock.getWeakPower(baseBlockState, new FakeWorld(blockAccess, pos, baseBlockState), pos, side);
+	}
+
+	@Override
+	public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player) {
+		return baseBlock.canHarvestBlock(new FakeWorld(world, pos, baseBlockState), pos, player);
+	}
+
+	@Override
+	public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
+		return baseBlock.getLightValue(baseBlockState, world, pos);
+	}
+
+	@Override
+	public Material getMaterial(IBlockState state) {
+		return baseBlock.getMaterial(baseBlockState);
+	}
+
+	@Override
+	public SoundType getSoundType(IBlockState state, World world, BlockPos pos, @Nullable Entity entity) {
+		return baseBlock.getSoundType(baseBlockState, world, pos, entity);
+	}
+
+	@Override
+	public SoundType getSoundType() {
+		return baseBlock.getSoundType();
+	}
+
+	private static class FakeWorld implements IBlockAccess {
+		private final IBlockAccess wrapped;
+		private final BlockPos pos;
+		private final IBlockState replaceWith;
+
+		private FakeWorld(IBlockAccess wrapped, BlockPos pos, IBlockState replaceWith) {
+			this.wrapped = wrapped;
+			this.pos = pos;
+			this.replaceWith = replaceWith;
+		}
+
+		@Nullable
+		@Override
+		public TileEntity getTileEntity(BlockPos pos) {
+			return wrapped.getTileEntity(pos);
+		}
+
+		@Override
+		public int getCombinedLight(BlockPos pos, int lightValue) {
+			return wrapped.getCombinedLight(pos, lightValue);
+		}
+
+		@Override
+		public IBlockState getBlockState(BlockPos pos) {
+			if (pos.equals(this.pos)) return replaceWith;
+			return wrapped.getBlockState(pos);
+		}
+
+		@Override
+		public boolean isAirBlock(BlockPos pos) {
+			return wrapped.isAirBlock(pos);
+		}
+
+		@Override
+		public Biome getBiome(BlockPos pos) {
+			return wrapped.getBiome(pos);
+		}
+
+		@Override
+		public int getStrongPower(BlockPos pos, EnumFacing direction) {
+			return wrapped.getStrongPower(pos, direction);
+		}
+
+		@Override
+		public WorldType getWorldType() {
+			return wrapped.getWorldType();
+		}
+
+		@Override
+		public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default) {
+			return wrapped.isSideSolid(pos, side, _default);
+		}
 	}
 }
