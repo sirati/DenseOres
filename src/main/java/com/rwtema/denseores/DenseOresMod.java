@@ -3,11 +3,20 @@ package com.rwtema.denseores;
 import com.google.common.collect.ImmutableSet;
 import com.rwtema.denseores.client.ModelGen;
 import com.rwtema.denseores.utils.LogHelper;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,6 +39,10 @@ public class DenseOresMod {
 
 	private File config;
 
+	public DenseOresMod() {
+		ModelGen.register();
+	}
+
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		config = event.getSuggestedConfigurationFile();
@@ -48,7 +61,7 @@ public class DenseOresMod {
 					ResourceLocation location;
 
 					int rendertype = 0;
-					int metadata;
+					Object2ObjectMap<String, String> properties = new Object2ObjectOpenHashMap<>();
 					String underlyingBlockTexture = "blocks/stone";
 					switch (key.substring("addDenseOre".length())) {
 						case "Stone":
@@ -73,12 +86,30 @@ public class DenseOresMod {
 					if (messageType == ItemStack.class) {
 						ItemStack stack = message.getItemStackValue();
 						ItemBlock itemBlock = (ItemBlock) stack.getItem();
+						IBlockState blockState = itemBlock.getBlock().getStateFromMeta(itemBlock.getMetadata(stack));
 						location = Block.REGISTRY.getNameForObject(itemBlock.getBlock());
-						metadata = itemBlock.getMetadata(itemBlock.getDamage(stack));
+
+						for (IProperty<?> p:blockState.getPropertyKeys()) {
+							if (p instanceof PropertyInteger) {
+								properties.put(p.getName(), Integer.toString(blockState.getValue((PropertyInteger)p)));
+							} else if (p instanceof PropertyBool) {
+								properties.put(p.getName(), Boolean.toString(blockState.getValue((PropertyBool)p)));
+							} else {
+								properties.put(p.getName(), blockState.getValue(p).toString());
+							}
+						}
 					} else if (messageType == NBTTagCompound.class) {
 						NBTTagCompound nbt = message.getNBTValue();
 						location = new ResourceLocation(nbt.getString("baseBlock"));
-						metadata = nbt.getInteger("baseBlockMeta");
+						NBTTagCompound propsNbt = nbt.getCompoundTag("baseBlockProperties");
+						for(String propKey:propsNbt.getKeySet()) {
+							NBTBase propNbt = propsNbt.getTag(propKey);
+							if (propNbt instanceof NBTPrimitive) {
+								properties.put(propKey, Integer.toString(((NBTPrimitive) propNbt).getInt()));
+							} else {
+								properties.put(propKey, ((NBTTagString)propNbt).getString());
+							}
+						}
 						if (nbt.hasKey("baseBlockTexture", Constants.NBT.TAG_STRING)) {
 							texture = nbt.getString("baseBlockTexture");
 						}
@@ -95,7 +126,7 @@ public class DenseOresMod {
 						unofficialName = null;
 					}
 					DenseOresRegistry.registerOre(
-							unofficialName, location, metadata, underlyingBlockTexture, texture, 0, rendertype
+							unofficialName, location, properties, underlyingBlockTexture, texture, 0, rendertype
 					);
 				}
 			} catch (Exception err) {
@@ -103,7 +134,6 @@ public class DenseOresMod {
 			}
 		}
 
-		ModelGen.register();
 		ModIntegration.addModIntegration();
 		LogHelper.info("Building the ore dictionary.");
 		DenseOresRegistry denseore_registry = new DenseOresRegistry();

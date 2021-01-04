@@ -76,7 +76,7 @@ public class ModIntegration {
 	}
 
 	public static ItemStack getFurnace(DenseOre toSmelt, float multiplier) {
-		ItemStack out = FurnaceRecipes.instance().getSmeltingResult(toSmelt.newStack(1));
+		ItemStack out = FurnaceRecipes.instance().getSmeltingResult(toSmelt.newBaseStack(1));
 
 		if (out.isEmpty()) {
 			out = out.copy();
@@ -104,7 +104,7 @@ public class ModIntegration {
 
 	public static void addModIntegration() {
 		for (DenseOre ore : DenseOresRegistry.ores.values()) {
-			ItemStack output = new ItemStack(ore.getBaseBlock(), 1, ore.metadata);
+			ItemStack output = ore.newBaseStack(1);
 			ItemStack input = new ItemStack(ore.block, 1, 0);
 
 			for (ModInterface mod : mods) {

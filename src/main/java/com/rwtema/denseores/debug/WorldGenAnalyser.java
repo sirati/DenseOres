@@ -2,17 +2,17 @@ package com.rwtema.denseores.debug;
 
 import com.rwtema.denseores.DenseOre;
 import com.rwtema.denseores.DenseOresRegistry;
-import com.rwtema.denseores.compat.Compat;
 import gnu.trove.map.hash.TObjectLongHashMap;
 import gnu.trove.procedure.TObjectLongProcedure;
-import mcjty.lib.compat.CompatCommand;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -28,7 +28,7 @@ import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Optional.Interface(iface = "mcjty.lib.compat.CompatCommand", modid = "compatlayer")
-public class WorldGenAnalyser extends CommandBase implements IWorldGenerator, CompatCommand {
+public class WorldGenAnalyser extends CommandBase implements IWorldGenerator {
 	public final static WorldGenAnalyser INSTANCE = new WorldGenAnalyser();
 
 	final TObjectLongHashMap<IBlockState> states = new TObjectLongHashMap<>();
@@ -118,7 +118,7 @@ public class WorldGenAnalyser extends CommandBase implements IWorldGenerator, Co
 				}
 			}
 
-			Compat.INSTANCE.addChatMessage(sender, new TextComponentString("Unrecognized Command"));
+			addChatMessage(sender, new TextComponentString("Unrecognized Command"));
 			return;
 		}
 
@@ -126,7 +126,7 @@ public class WorldGenAnalyser extends CommandBase implements IWorldGenerator, Co
 			states.forEachEntry(new TObjectLongProcedure<IBlockState>() {
 				@Override
 				public boolean execute(IBlockState a, long b) {
-					Compat.INSTANCE.addChatMessage(sender, new TextComponentString(a + " " + (((double) b / n))));
+					addChatMessage(sender, new TextComponentString(a + " " + (((double) b / n))));
 					return true;
 				}
 			});
@@ -134,14 +134,14 @@ public class WorldGenAnalyser extends CommandBase implements IWorldGenerator, Co
 
 			double k = 0;
 			for (DenseOre denseOre : DenseOresRegistry.ores.values()) {
-				Compat.INSTANCE.addChatMessage(sender, new TextComponentString("Ore " + denseOre.name));
+				addChatMessage(sender, new TextComponentString("Ore " + denseOre.name));
 				double t = 0;
 				IBlockState baseBlockState = denseOre.block.getBaseBlockState();
 				if (states.containsKey(baseBlockState)) {
 					double v = (double) states.get(baseBlockState) / n;
 					k += v;
 					t += v;
-					Compat.INSTANCE.addChatMessage(sender, new TextComponentString("Ore " + baseBlockState + " " + v));
+					addChatMessage(sender, new TextComponentString("Ore " + baseBlockState + " " + v));
 				}
 
 				for (IBlockState oreState : denseOre.block.getBlockState().getValidStates()) {
@@ -149,12 +149,22 @@ public class WorldGenAnalyser extends CommandBase implements IWorldGenerator, Co
 						double v = (double) states.get(oreState) / n;
 						k += v;
 						t += v;
-						Compat.INSTANCE.addChatMessage(sender, new TextComponentString("Ore " + oreState + " " + v));
+						addChatMessage(sender, new TextComponentString("Ore " + oreState + " " + v));
 					}
 				}
-				Compat.INSTANCE.addChatMessage(sender, new TextComponentString("SubTotal " + t));
+				addChatMessage(sender, new TextComponentString("SubTotal " + t));
 			}
-			Compat.INSTANCE.addChatMessage(sender, new TextComponentString("Total " + k));
+			addChatMessage(sender, new TextComponentString("Total " + k));
 		}
 	}
+
+	public void addChatMessage(@Nonnull ICommandSender sender, @Nonnull ITextComponent component) {
+		if (sender instanceof EntityPlayer) {
+			((EntityPlayer) sender).sendStatusMessage(component, false);
+		} else {
+			sender.sendMessage(component);
+		}
+	}
+
+
 }

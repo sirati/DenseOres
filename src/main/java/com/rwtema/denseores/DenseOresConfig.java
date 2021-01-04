@@ -1,8 +1,14 @@
 package com.rwtema.denseores;
 
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.Loader;
 
 import java.io.File;
@@ -27,8 +33,15 @@ public class DenseOresConfig {
 
 			String cat = CATEGORY_BLOCK + ore.unofficialName;
 
-			config.get(cat, "baseBlock", ore.baseBlock.toString());
-			config.get(cat, "baseBlockMeta", ore.metadata);
+			for (IProperty<?> p:ore.getBaseState().getPropertyKeys()) {
+				if (p instanceof PropertyInteger) {
+					config.get(cat + "baseBlockProperties", p.getName(), ore.getBaseState().getValue((PropertyInteger)p));
+				} else if (p instanceof PropertyBool) {
+					config.get(cat + "baseBlockProperties", p.getName(), ore.getBaseState().getValue((PropertyBool)p));
+				} else {
+					config.get(cat + "baseBlockProperties", p.getName(), ore.getBaseState().getValue(p).toString());
+				}
+			}
 			if (ore.texture != null)
 				config.get(cat, "baseBlockTexture", ore.texture);
 			config.get(cat, "underlyingBlockTexture", ore.underlyingBlockTexture);
@@ -49,9 +62,22 @@ public class DenseOresConfig {
 
 				// register the block
 				if (config.hasKey(cat, "baseBlock")) {
+
+					Object2ObjectMap<String, String> properties = new Object2ObjectOpenHashMap<>();
+					for(Property p: config.getCategory(cat + ".baseBlockProperties").getOrderedValues()) {
+						if (p.isIntValue()) {
+							properties.put(p.getName(), Integer.toString(p.getInt()));
+						} else if (p.isBooleanValue()) {
+							properties.put(p.getName(), Boolean.toString(p.getBoolean()));
+						} else {
+							properties.put(p.getName(), p.getString());
+						}
+					}
+
+
 					DenseOresRegistry.registerOre(
 							name, new ResourceLocation(config.get(cat, "baseBlock", "").getString().trim()),
-							config.get(cat, "baseBlockMeta", 0).getInt(0),
+							properties,
 							config.get(cat, "underlyingBlockTexture", "blocks/stone").getString().trim(),
 							config.hasKey(cat, "baseBlockTexture") ? config.get(cat, "baseBlockTexture", "").getString().trim() : null,
 							config.get(cat, "retroGenID", 0).getInt(),

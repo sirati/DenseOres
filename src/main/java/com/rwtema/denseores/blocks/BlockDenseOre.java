@@ -1,11 +1,15 @@
 package com.rwtema.denseores.blocks;
 
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.rwtema.denseores.DenseOre;
 import com.rwtema.denseores.blockaccess.BlockAccessSingleOverride;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -21,9 +25,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /*  I'm using the MAX_METADATA metadata values to store each ore block.
  *  (We don't really need to worry about block ids in 1.7
@@ -45,7 +47,7 @@ public class BlockDenseOre extends Block {
 		setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
 	}
 
-	public static Block getBlock(DenseOre ore) {
+	public static Block getBaseBlock(DenseOre ore) {
 		return ore != null ? Block.REGISTRY.getObject(ore.baseBlock) : null;
 	}
 
@@ -69,10 +71,10 @@ public class BlockDenseOre extends Block {
 
 		World world = (World) blockAccess;
 
-		return getBlock(world);
+		return getBaseBlock(world);
 	}
 
-	public static Block getBlock(World world) {
+	public static Block getBaseBlock(World world) {
 		if (world.provider == null)
 			return Blocks.STONE;
 
@@ -108,9 +110,26 @@ public class BlockDenseOre extends Block {
 		init = true;
 
 		baseBlock = denseOre.getBaseBlock();
-		baseBlockState = baseBlock.getStateById(denseOre.metadata);
+		baseBlockState = baseBlock.getDefaultState();
+
+		Object2ObjectMap<String, IProperty<?>> properties = new Object2ObjectOpenHashMap<>();
+		for (IProperty<?> p:baseBlockState.getPropertyKeys()) {
+			properties.put(p.getName(), p);
+		}
+
+		for (Map.Entry<String, String> entry : denseOre.propertyLookup.entrySet()) {
+			IProperty<?> p = properties.get(entry.getKey());
+			if (p == null) throw new IllegalStateException(String.format("There is no property names %s for block %s", entry.getKey(), baseBlock));
+			baseBlockState = setProperty(baseBlockState, p, entry.getValue());
+		}
 
 		isValid = baseBlock != null && baseBlock != Blocks.AIR;
+	}
+
+	private static <T extends Comparable<T>> IBlockState setProperty(IBlockState state, IProperty<T> property, String valueStr) {
+		Optional<T> valueParsed = property.parseValue(valueStr);
+		return state.withProperty(property, valueParsed.toJavaUtil().orElseThrow(() ->
+				new IllegalStateException(String.format("Block %s's property %s does not have the value %s! Allowed: %s", state.getBlock(), property.getName(), valueStr, Arrays.toString(property.getAllowedValues().toArray(new Object[0]))))));
 	}
 
 	@Nonnull
@@ -118,7 +137,7 @@ public class BlockDenseOre extends Block {
 		return new BlockStateContainer(this);
 	}
 
-	public Block getBlock() {
+	public Block getBaseBlock() {
 		if (!init) init();
 		return baseBlock;
 	}
@@ -136,7 +155,7 @@ public class BlockDenseOre extends Block {
 		try {
 			world.setBlockState(pos, getBaseBlockState(), 0);
 			for (int i = 0; i < 1 + rand.nextInt(3); i++)
-				getBlock().randomDisplayTick(getBaseBlockState(), world, pos, rand);
+				getBaseBlock().randomDisplayTick(getBaseBlockState(), world, pos, rand);
 		} finally {
 			world.setBlockState(pos, state, 0);
 		}
@@ -179,7 +198,7 @@ public class BlockDenseOre extends Block {
 		ArrayList<ItemStack> list = new ArrayList<>();
 
 		if (isValid()) {
-			Block base = getBlock();
+			Block base = getBaseBlock();
 
 			if (base == null)
 				return list;
@@ -216,7 +235,7 @@ public class BlockDenseOre extends Block {
 		try {
 			IBlockState baseBlockState = getBaseBlockState();
 			world.setBlockState(pos, baseBlockState, 0);
-			float blockHardness = getBlock().getBlockHardness(baseBlockState, world, pos);
+			float blockHardness = getBaseBlock().getBlockHardness(baseBlockState, world, pos);
 			world.setBlockState(pos, state, 0);
 			if (tile != null) {
 				NBTTagCompound tag = new NBTTagCompound();

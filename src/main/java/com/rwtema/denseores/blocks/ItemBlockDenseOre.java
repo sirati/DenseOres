@@ -24,16 +24,21 @@ public class ItemBlockDenseOre extends ItemBlock {
 		return par1;
 	}
 
+	private String displayName;
+
 	// Adds the 'dense' qualifier to the base blocks name
 	@Nonnull
 	public String getItemStackDisplayName(@Nonnull ItemStack stack) {
 		if (!oreBlock.isValid())
 			return "Invalid Ore";
 		else {
-			ItemStack temp = new ItemStack(oreBlock.getBlock(), 1, oreBlock.denseOre.metadata);
+			if (displayName == null) {
+				ItemStack temp = oreBlock.denseOre.newBaseStack(1);
 
-			String p = ("" + I18n.translateToLocal("denseores.dense.prefix")).trim();
-			return p.replaceFirst("ORENAME", temp.getDisplayName());
+				String p = ("" + I18n.translateToLocal("denseores.dense.prefix")).trim();
+				displayName =  p.replaceFirst("ORENAME", temp.getDisplayName());
+			} //todo invalidate if language changed, use LanguageMap.getLastUpdateTimeInMilliseconds NEED AT forgebot currently down
+			return displayName;
 		}
 	}
 

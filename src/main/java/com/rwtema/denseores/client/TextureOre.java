@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.function.Function;
 
 // Custom texture class to handle the ore generation
 @SideOnly(Side.CLIENT)
@@ -173,7 +174,8 @@ public class TextureOre extends TextureAtlasSprite {
 		super.generateMipmaps(level);
 	}
 
-	public boolean load(IResourceManager manager, ResourceLocation location) {
+	@Override
+	public boolean load(IResourceManager manager, ResourceLocation location, Function<ResourceLocation, TextureAtlasSprite> textureGetter) {
 
 		// get mipmapping level
 		int mp = Minecraft.getMinecraft().gameSettings.mipmapLevels;

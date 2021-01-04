@@ -1,0 +1,10 @@
+{
+  "package": "com.rwtema.denseores.mixins",
+  "refmap": "mixins.denseores.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ItemMesherEventMixin"
+  ]
+}

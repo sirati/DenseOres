@@ -24,7 +24,7 @@ public class WorldGenOres implements IWorldGenerator {
 
 	public static boolean overrideChunkBlock(Chunk chunk, BlockPos pos, IBlockState state, boolean retroGen) {
 		if (!retroGen) {
-			return chunk.getWorld().setBlockState(pos, state);
+			return state == chunk.setBlockState(pos, state);
 		}
 		int x = pos.getX();
 		int y = pos.getY();

@@ -3,6 +3,7 @@ package com.rwtema.denseores.client;
 import com.rwtema.denseores.DenseOre;
 import com.rwtema.denseores.DenseOresRegistry;
 import com.rwtema.denseores.blocks.BlockDenseOre;
+import com.rwtema.denseores.utils.LogHelper;
 import com.rwtema.denseores.utils.ModelBuilder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -51,7 +52,7 @@ public class ModelGen {
 			if (ore.texture != null) {
 				continue;
 			}
-			IBlockState state = ore.getBaseBlock().getStateById(ore.metadata);
+			IBlockState state = ore.getBaseState();
 			Map<IBlockState, ModelResourceLocation> map = mapper.getVariants(ore.getBaseBlock());
 			ModelResourceLocation modelResourceLocation = map.get(state);
 
@@ -88,7 +89,6 @@ public class ModelGen {
 	@SideOnly(Side.CLIENT)
 	public static void addModels(ModelBakeEvent event) {
 		IRegistry<ModelResourceLocation, IBakedModel> modelRegistry = event.getModelRegistry();
-		ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 		ModelManager manager = event.getModelManager();
 		BlockModelShapes shapes = manager.getBlockModelShapes();
 		BlockStateMapper mapper = shapes.getBlockStateMapper();
@@ -99,7 +99,6 @@ public class ModelGen {
 			modelRegistry.putObject(new ModelResourceLocation(Item.REGISTRY.getNameForObject(item), "inventory"), new EmptyBakedModel());
 
 			Map<IBlockState, ModelResourceLocation> locations = new DefaultStateMapper().putStateModelLocations(block);
-			final ModelResourceLocation[] invModels = new ModelResourceLocation[1];
 			for (IBlockState iBlockState : block.getBlockState().getValidStates()) {
 				ModelResourceLocation blockLocation = locations.get(iBlockState);
 				ModelResourceLocation inventoryLocation = new ModelResourceLocation(Item.REGISTRY.getNameForObject(item) + "_" + "dense", "inventory");
@@ -118,10 +117,25 @@ public class ModelGen {
 
 				modelRegistry.putObject(blockLocation, iBakedModel);
 				modelRegistry.putObject(inventoryLocation, iBakedModel);
-
-				mesher.register(item, 0, inventoryLocation);
-				invModels[0] = inventoryLocation;
 			}
+
+		}
+	}
+
+	public static void registerMesh() {
+
+		LogHelper.info("registerMesh waw called, mixin worked");
+		ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
+
+		for (DenseOre denseOre : DenseOresRegistry.ores.values()) {
+			BlockDenseOre block = denseOre.block;
+			Item item = Item.getItemFromBlock(block);
+
+			final ModelResourceLocation[] invModels = new ModelResourceLocation[1];
+			ModelResourceLocation inventoryLocation = new ModelResourceLocation(Item.REGISTRY.getNameForObject(item) + "_" + "dense", "inventory");
+
+			mesher.register(item, 0, inventoryLocation);
+			invModels[0] = inventoryLocation;
 
 			mesher.register(item, new ItemMeshDefinition() {
 				@Nonnull

@@ -2,11 +2,11 @@ package com.rwtema.denseores;
 
 import com.rwtema.denseores.blocks.BlockDenseOre;
 import com.rwtema.denseores.blocks.ItemBlockDenseOre;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ResourceLocation;
@@ -14,6 +14,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * Dense ore entry
@@ -26,7 +27,7 @@ public class DenseOre {
 
 	public int rendertype;
 	public ResourceLocation baseBlock;
-	public int metadata;
+	public Object2ObjectMap<String, String> propertyLookup;
 
 	public String underlyingBlockTexture;
 	@Nullable
@@ -45,11 +46,11 @@ public class DenseOre {
 	public String oreDictionary;
 
 
-	public DenseOre(String unofficialName, ResourceLocation name, ResourceLocation baseBlock, int metadata, String underlyingBlock, @Nullable String texture, int retroGenId, int renderType) {
+	public DenseOre(String unofficialName, ResourceLocation name, ResourceLocation baseBlock, Object2ObjectMap<String, String> propertyLookup, String underlyingBlock, @Nullable String texture, int retroGenId, int renderType) {
 		this.unofficialName = unofficialName;
 		this.name = name;
 		this.baseBlock = new ResourceLocation(baseBlock.toString().toLowerCase());
-		this.metadata = metadata;
+		this.propertyLookup = propertyLookup;
 		this.underlyingBlockTexture = underlyingBlock.toString().toLowerCase();
 		this.texture = texture.toString().toLowerCase();
 		this.retroGenId = retroGenId;
@@ -69,8 +70,20 @@ public class DenseOre {
 		return Blocks.AIR;
 	}
 
-	public ItemStack newStack(int stacksize) {
-		return new ItemStack(getBaseBlock(), stacksize, metadata);
+	public ItemStack newBaseStack(int stacksize) {
+		ItemStack result = getBaseBlock().getItem(null, null, getBaseState());
+		result.setCount(stacksize);
+		return result;
+	}
+
+	private static String convertWithIteration(Map<String, String> map) {
+		if (map.size() == 0) return "{}";
+		StringBuilder mapAsString = new StringBuilder("{");
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			mapAsString.append(entry.getKey()).append("=").append(entry.getValue()).append(", ");
+		}
+		mapAsString.delete(mapAsString.length()-2, mapAsString.length()).append("}");
+		return mapAsString.toString();
 	}
 
 	@Override
@@ -80,7 +93,7 @@ public class DenseOre {
 				", name=" + name +
 				", rendertype=" + rendertype +
 				", baseBlock=" + baseBlock +
-				", metadata=" + metadata +
+				", properties=" + convertWithIteration(propertyLookup) +
 				", underlyingBlockTexture='" + underlyingBlockTexture + '\'' +
 				", texture='" + texture + '\'' +
 				", retroGenId=" + retroGenId +
@@ -92,7 +105,7 @@ public class DenseOre {
 			return smelt;
 
 		initSmelt = true;
-		ItemStack out = FurnaceRecipes.instance().getSmeltingResult(new ItemStack(getBaseBlock(), 1, metadata));
+		ItemStack out = FurnaceRecipes.instance().getSmeltingResult(newBaseStack(1));
 
 		if (out.isEmpty()) {
 			out = out.copy();
