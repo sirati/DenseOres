@@ -25,3 +25,16 @@ thermalfoundation,thermalfoundation:ore_fluid,Red Sand Crude Oil,blocks/red_sand
 thermalfoundation,thermalfoundation:ore_fluid,Gravel Sand Crude Oil,blocks/gravel,type,crude_oil_gravel
 tinkers construct,tconstruct:ore,Cobalt Ore,blocks/netherrack,type,cobalt
 tinkers construct,tconstruct:ore,Ardite Ore,blocks/netherrack,type,ardite
+gravelores,gravelores:aluminum_gravel_ore,Aluminum Gravel Ore,blocks/gravel,,
+gravelores,gravelores:coal_gravel_ore,Coal Gravel Ore,blocks/gravel,,
+gravelores,gravelores:copper_gravel_ore,Copper Gravel Ore,blocks/gravel,,
+gravelores,gravelores:diamond_gravel_ore,Diamond Gravel Ore,blocks/gravel,,
+gravelores,gravelores:emerald_gravel_ore,Emerald Gravel Ore,blocks/gravel,,
+gravelores,gravelores:gold_gravel_ore,Gold Gravel Ore,blocks/gravel,,
+gravelores,gravelores:iron_gravel_ore,Iron Gravel Ore,blocks/gravel,,
+gravelores,gravelores:lapis_gravel_ore,Lapis Gravel Ore,blocks/gravel,,
+gravelores,gravelores:lead_gravel_ore,Lead Gravel Ore,blocks/gravel,,
+gravelores,gravelores:nickel_gravel_ore,Nickel Gravel Ore,blocks/gravel,,
+gravelores,gravelores:redstone_gravel_ore,Redstone Gravel Ore,blocks/gravel,,
+gravelores,gravelores:silver_gravel_ore,Silver Gravel Ore,blocks/gravel,,
+gravelores,gravelores:tin_gravel_ore,Tin Gravel Ore,blocks/gravel,,

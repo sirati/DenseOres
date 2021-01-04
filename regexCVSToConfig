@@ -1,0 +1,9 @@
+([\w ]+),([\w\:]+),([\w ]+),([\w\/\:]+),(\w*),(\w*)
+
+    "$1 $3" {
+        S:baseBlock=$2
+        S:underlyingBlockTexture=$4
+        baseblockproperties {
+            S:$5=$6
+        }
+    }
