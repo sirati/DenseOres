@@ -21,7 +21,7 @@ apply plugin: 'org.spongepowered.mixin'
 //Only edit below this line, the above code adds and enables the nessasary things for Forge to be setup.
 
 
-version = "1.1.0.0-alpha1"
+version = "1.1.0.1-alpha2"
 group= "com.rwtema.denseores" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "denseores-1.12.2"
 
@@ -106,6 +106,8 @@ processResources
         
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
+        include '*'
+
         exclude 'mcmod.info'
     }
 }

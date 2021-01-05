@@ -1,4 +1,5 @@
-denseores.prefix=ORENAME Denso
+denseores.dense.prefix=EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME Denso
 denseores.command.help=Saídas das texturas atuais direcionadas para a pasta 'denseoretextures'.
 denseores.commandIdentify.help=Identifica o registro do bloco e o nome da textura
 denseores.commandIdentify.invalid=Item atualmente mantido não é um bloco

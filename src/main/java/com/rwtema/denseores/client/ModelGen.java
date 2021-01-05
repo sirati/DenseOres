@@ -1,6 +1,7 @@
 package com.rwtema.denseores.client;
 
 import com.rwtema.denseores.DenseOre;
+import com.rwtema.denseores.DenseOreInfo;
 import com.rwtema.denseores.DenseOresRegistry;
 import com.rwtema.denseores.blocks.BlockDenseOre;
 import com.rwtema.denseores.utils.LogHelper;
@@ -48,8 +49,8 @@ public class ModelGen {
 
 		BlockModelShapes shapes = manager.getBlockModelShapes();
 		BlockStateMapper mapper = shapes.getBlockStateMapper();
-		for (DenseOre ore : DenseOresRegistry.ores.values()) {
-			if (ore.texture != null) {
+		for (DenseOreInfo ore : DenseOresRegistry.oreInfos.values()) {
+			if (ore.overrideTexture != null) {
 				continue;
 			}
 			IBlockState state = ore.getBaseState();
@@ -64,21 +65,40 @@ public class ModelGen {
 			}
 
 			Collection<ResourceLocation> textures = model.getTextures();
+			ModelResourceLocation backdrop = mapper.getVariants(ore.texBackdrop.getBlock()).get(ore.texBackdrop.getBlockState());
 
 			for (ResourceLocation texture : textures) {
-				if (!texture.equals(new ResourceLocation(ore.underlyingBlockTexture))) {
-					ore.texture = texture.toString();
+				if (!texture.equals(backdrop)) {
+					ore.overrideTexture = texture.toString();
 					break;
 				}
 			}
 
 		}
 
-		for (DenseOre ore : DenseOresRegistry.ores.values()) {
-			if (ore.texture == null || "".equals(ore.texture)) {
+		for (DenseOreInfo ore : DenseOresRegistry.oreInfos.values()) {
+			ModelResourceLocation backdrop = mapper.getVariants(ore.texBackdrop.getBlock()).get(ore.texBackdrop.getBlockState());
+			IModel modelBase = null;
+			try {
+				modelBase = ModelLoaderRegistry.getModel(backdrop);
+			} catch (Exception e) {
+				ore.sprite = event.getMap().getMissingSprite();
+				continue;
+			}
+			IModel modelNewBase = modelBase;
+			if (ore.texBackdrop != ore.texNewBackdrop) {
+				ModelResourceLocation backdropNew = mapper.getVariants(ore.texNewBackdrop.getBlock()).get(ore.texNewBackdrop.getBlockState());
+				try {
+					modelNewBase = ModelLoaderRegistry.getModel(backdropNew);
+				} catch (Exception e) {
+					modelNewBase = modelBase;
+				}
+			}
+
+			if (ore.overrideTexture == null || "".equals(ore.overrideTexture)) {
 				ore.sprite = event.getMap().getMissingSprite();
 			} else {
-				TextureOre textureOre = new TextureOre(ore);
+				TextureOre textureOre = new TextureOre(ore, modelBase.getTextures().iterator().next(), modelNewBase.getTextures().iterator().next());
 				event.getMap().setTextureEntry(textureOre);
 				ore.sprite = event.getMap().getTextureExtry(textureOre.getIconName());
 			}
@@ -103,7 +123,7 @@ public class ModelGen {
 				ModelResourceLocation blockLocation = locations.get(iBlockState);
 				ModelResourceLocation inventoryLocation = new ModelResourceLocation(Item.REGISTRY.getNameForObject(item) + "_" + "dense", "inventory");
 
-				ModelResourceLocation location = mapper.getVariants(denseOre.getBaseBlock()).get(denseOre.getBaseState());
+				ModelResourceLocation location = mapper.getVariants(denseOre.info.getBaseBlock()).get(denseOre.getBaseState());
 				IBakedModel parentModel = null;
 				if (location != null) {
 					parentModel = modelRegistry.getObject(location);
@@ -113,7 +133,7 @@ public class ModelGen {
 					parentModel = modelRegistry.getObject(mapper.getVariants(Blocks.STONE).get(Blocks.STONE.getDefaultState()));
 				}
 
-				IBakedModel iBakedModel = ModelBuilder.changeIcon(denseOre.getBaseState(), parentModel, denseOre.sprite);
+				IBakedModel iBakedModel = ModelBuilder.changeIcon(denseOre.getBaseState(), parentModel, denseOre.info.sprite);
 
 				modelRegistry.putObject(blockLocation, iBakedModel);
 				modelRegistry.putObject(inventoryLocation, iBakedModel);

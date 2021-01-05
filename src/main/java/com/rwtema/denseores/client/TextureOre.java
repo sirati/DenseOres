@@ -1,7 +1,7 @@
 package com.rwtema.denseores.client;
 
 import com.google.common.base.Throwables;
-import com.rwtema.denseores.DenseOre;
+import com.rwtema.denseores.DenseOreInfo;
 import com.rwtema.denseores.DenseOresMod;
 import com.rwtema.denseores.blockstates.Offset;
 import com.rwtema.denseores.utils.ColorHelper;
@@ -33,52 +33,63 @@ import java.util.function.Function;
 public class TextureOre extends TextureAtlasSprite {
 
 
-	public String name;
-	public String base;
+	public final String name;
+	public final String blockId;
+	public final String base;
+	public final String newBase;
+	public final boolean dense;
+	public final int distance;
+	public final boolean replaceBase;
 	public int type;
 	private int renderType = 0;
 
-	public TextureOre(DenseOre denseOre) {
-		this(denseOre.texture, denseOre.underlyingBlockTexture);
+	public TextureOre(DenseOreInfo denseOre, ResourceLocation textureBase, ResourceLocation textureNewBase) {
+		this(denseOre.overrideTexture, denseOre.name.getPath(), textureBase.toString(), textureNewBase.toString(), denseOre.dense, denseOre.maxColourDist);
 		renderType = denseOre.rendertype;
 	}
 
-	public TextureOre(String par1Str, String base) {
-		super(getDerivedName(par1Str));
+	public TextureOre(String par1Str, String id, String base, String newBase, boolean dense, int colourDistance) {
+		super(getDerivedName(par1Str, id));
 		this.name = par1Str;
+		this.blockId = id;
 		this.base = base;
+		this.newBase = newBase;
+		this.dense = dense;
+		distance = colourDistance < 0?20:colourDistance;
+		this.replaceBase = !base.equals(newBase);
 	}
 
-	public static String getDerivedName(String s2) {
+	public static String getDerivedName(String s2, String id) {
 		String s1 = "minecraft";
 
-		int ind = s2.indexOf(58);
+		int ind = s2.indexOf(':');
+		int ind2 = s2.indexOf('/');
 
 		if (ind >= 0) {
 			if (ind > 1) {
 				s1 = s2.substring(0, ind);
 			}
 
-			s2 = s2.substring(ind + 1, s2.length());
+			s2 = s2.substring(ind + 1, ind2);
 		}
 
 		s1 = s1.toLowerCase();
 
-		return DenseOresMod.MODID + ":" + s1 + "/" + s2 + "_" + "dense";
+		return DenseOresMod.MODID + ":" + s1 + "/" + s2 + "/" + id;
 	}
 
 	// converts texture name to resource location
 	public static ResourceLocation getBlockResource(String s2) {
 		String s1 = "minecraft";
 
-		int ind = s2.indexOf(58);
+		int ind = s2.indexOf(':');
 
 		if (ind >= 0) {
 			if (ind > 1) {
 				s1 = s2.substring(0, ind);
 			}
 
-			s2 = s2.substring(ind + 1, s2.length());
+			s2 = s2.substring(ind + 1);
 		}
 
 		s1 = s1.toLowerCase();
@@ -87,7 +98,7 @@ public class TextureOre extends TextureAtlasSprite {
 		return new ResourceLocation(s1, s2);
 	}
 
-	private static int[] createDenseTexture(int w, int[] ore_data, int[] stone_data, int renderType) {
+	private static int[] createDenseTexture(int w, int[] ore_data, int[] stone_data, int[] newBack_data, int renderType, boolean dense, int colourDistance) {
 		int[] new_data = new int[w * w];
 
 		int r = w >> 4;
@@ -121,43 +132,47 @@ public class TextureOre extends TextureAtlasSprite {
 
 			}
 
-			new_data[i] = ore_data[i];
+			new_data[i] = same[i]?newBack_data[i]:ore_data[i];
 		}
 
-		try {
-			int[] dx;
-			int[] dy;
+		if (dense) {
+			try {
+				int[] dx;
+				int[] dy;
 
-			//allows for different convolution filters
-			Offset offset = Offset.getOffset(renderType);
-			dx = offset.dx;
-			dy = offset.dy;
+				//allows for different convolution filters
+				Offset offset = Offset.getOffset(renderType);
+				dx = offset.dx;
+				dy = offset.dy;
 
-			// where the magic happens
-			for (int i = 0; i < ore_data.length; i += 1) {
-				int x = (i % w);
-				int y = (i - x) / w;
+				// where the magic happens
+				for (int i = 0; i < ore_data.length; i += 1) {
+					int x = (i % w);
+					int y = (i - x) / w;
 
-				// if the pixel an ore pixel, we don't need to do anything so continue
-				if (!same[i])
-					continue;
+					// if the pixel an ore pixel, we don't need to do anything so continue
+					if (!same[i])
+						continue;
 
-				// use our convolution filter to see if we can find an ore pixel nearby
-				for (int j = 0; j < dx.length; j++) {
-					final int new_x = x + dx[j];
-					final int new_y = y + dy[j];
+					// use our convolution filter to see if we can find an ore pixel nearby
+					for (int j = 0; j < dx.length; j++) {
+						final int new_x = x + dx[j];
+						final int new_y = y + dy[j];
 
-					if (new_x >= 0 && new_x < w && new_y >= 0 && new_y < w) // is valid pixel location
-						if (!same[new_x + new_y * w]) { // is it an ore pixel?
-							new_data[i] = ore_data[new_x + new_y * w];
-							break;
-						}
+						if (new_x >= 0 && new_x < w && new_y >= 0 && new_y < w) // is valid pixel location
+							if (!same[new_x + new_y * w]) { // is it an ore pixel?
+								new_data[i] = ore_data[new_x + new_y * w];
+								break;
+							}
+					}
 				}
+			} catch (Throwable err) {
+				err.printStackTrace();
+				throw Throwables.propagate(err);
 			}
-		} catch (Throwable err) {
-			err.printStackTrace();
-			throw Throwables.propagate(err);
 		}
+
+
 		return new_data;
 	}
 
@@ -189,6 +204,7 @@ public class TextureOre extends TextureAtlasSprite {
 		BufferedImage[] ore_image = new BufferedImage[1 + mp];
 
 		BufferedImage stone_image;
+		BufferedImage newBack_image;
 		int w;
 
 		AnimationMetadataSection animation;
@@ -198,6 +214,7 @@ public class TextureOre extends TextureAtlasSprite {
 		try {
 			IResource iresource = manager.getResource(getBlockResource(name));
 			IResource iresourceBase = manager.getResource(getBlockResource(base));
+			IResource iresourceNewBase = replaceBase ? manager.getResource(getBlockResource(newBase)) : iresourceBase;
 
 			sizeInfo = new PngSizeInfo(manager.getResource(getBlockResource(name)).getInputStream());
 
@@ -210,6 +227,7 @@ public class TextureOre extends TextureAtlasSprite {
 
 			// load the stone texture
 			stone_image = ImageIO.read(iresourceBase.getInputStream());
+			newBack_image = replaceBase ? ImageIO.read(iresourceNewBase.getInputStream()) : stone_image;
 
 			w = ore_image[0].getWidth();
 
@@ -242,15 +260,19 @@ public class TextureOre extends TextureAtlasSprite {
 		// pixel data is in the form 0xaarrggbb
 		int[] ore_data = new int[w * w];
 		int[] stone_data = new int[w * w];
+		int[] newBack_data = replaceBase?new int[w * w]:stone_data;
 
 		stone_image.getRGB(0, 0, w, w, stone_data, 0, w);
+		if (replaceBase) {
+			newBack_image.getRGB(0, 0, w, w, newBack_data, 0, w);
+		}
 
 		for (int y = 0; y < h; y += w) {
 			// read the ARGB color data into our arrays
 			ore_image[0].getRGB(0, y, w, w, ore_data, 0, w);
 
 			// generate our new texture
-			int[] new_data = createDenseTexture(w, ore_data, stone_data, renderType);
+			int[] new_data = createDenseTexture(w, ore_data, stone_data, newBack_data, renderType, dense, distance);
 
 			// write the new image data to the output image buffer
 			output_image.setRGB(0, y, w, w, new_data, 0, w);

@@ -1,17 +1,14 @@
 package com.rwtema.denseores.blocks;
 
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.rwtema.denseores.DenseOre;
+import com.rwtema.denseores.DenseOreInfo;
 import com.rwtema.denseores.blockaccess.BlockAccessSingleOverride;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import com.rwtema.denseores.material.MaterialDelegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -24,14 +21,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 /*  I'm using the MAX_METADATA metadata values to store each ore block.
@@ -40,22 +36,12 @@ import java.util.*;
  */
 
 public class BlockDenseOre extends Block {
-	public boolean init = false;
+	DenseOreInfo denseOre;
 
-	DenseOre denseOre;
-	// Ore Entry stuff
-	IBlockState baseBlockState;
-	private boolean isValid;
-	private Block baseBlock;
-
-	public BlockDenseOre(DenseOre denseOre) {
+	public BlockDenseOre(DenseOreInfo denseOre) {
 		super(Material.ROCK);
 		this.denseOre = denseOre;
 		setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
-	}
-
-	public static Block getBaseBlock(DenseOre ore) {
-		return ore != null ? Block.REGISTRY.getObject(ore.baseBlock) : null;
 	}
 
 	public static Block getNullOverride(IBlockAccess world, BlockPos pos) {
@@ -95,74 +81,51 @@ public class BlockDenseOre extends Block {
 	}
 
 	public Block getUnderlyingBlock(IBlockAccess world, BlockPos pos) {
-		if ("blocks/stone".equals(denseOre.underlyingBlockTexture)) {
-			return Blocks.STONE;
-		}
-		if ("blocks/netherrack".equals(denseOre.underlyingBlockTexture)) {
-			return Blocks.NETHERRACK;
-		}
-		if ("blocks/end_stone".equals(denseOre.underlyingBlockTexture)) {
-			return Blocks.END_STONE;
-		}
-
-		return getNullOverride(world, pos);
+		return denseOre.texBackdrop.getBlock();
 	}
 
 	public boolean isValid() {
-		if (!init) init();
-		return isValid;
+		return denseOre.texBaseOre.isValid();
 	}
 
-	public void init() {
-		init = true;
 
-		baseBlock = denseOre.getBaseBlock();
-		baseBlockState = baseBlock.getDefaultState();
-
-		Object2ObjectMap<String, IProperty<?>> properties = new Object2ObjectOpenHashMap<>();
-		for (IProperty<?> p:baseBlockState.getPropertyKeys()) {
-			properties.put(p.getName(), p);
-		}
-
-		for (Map.Entry<String, String> entry : denseOre.propertyLookup.entrySet()) {
-			IProperty<?> p = properties.get(entry.getKey());
-			if (p == null) throw new IllegalStateException(String.format("There is no property names %s for block %s", entry.getKey(), baseBlock));
-			baseBlockState = setProperty(baseBlockState, p, entry.getValue());
-		}
-
-		isValid = baseBlock != null && baseBlock != Blocks.AIR;
-	}
-
-	private static <T extends Comparable<T>> IBlockState setProperty(IBlockState state, IProperty<T> property, String valueStr) {
-		Optional<T> valueParsed = property.parseValue(valueStr);
-		return state.withProperty(property, valueParsed.toJavaUtil().orElseThrow(() ->
-				new IllegalStateException(String.format("Block %s's property %s does not have the value %s! Allowed: %s", state.getBlock(), property.getName(), valueStr, Arrays.toString(property.getAllowedValues().toArray(new Object[0]))))));
-	}
 
 	@Nonnull
 	protected BlockStateContainer createBlockState() {
 		return new BlockStateContainer(this);
 	}
 
-	public Block getBaseBlock() {
-		if (!init) init();
-		return baseBlock;
+	public Block getBaseOreBlock() {
+		return denseOre.ore.getBlock();
 	}
 
-	public IBlockState getBaseBlockState() {
-		if (!init) init();
-		return baseBlockState;
+	public IBlockState getBaseOreBlockState() {
+		return denseOre.ore.getBlockState();
+	}
+	
+	public Block getContainerBlock() {
+		return denseOre.container.getBlock();
+	}
+
+	public IBlockState getContainerBlockState() {
+		return denseOre.container.getBlockState();
 	}
 
 	@Override
 	public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
-		if (!isValid())
+		if (!isValid()) {
 			return;
+		}
 
 		try {
-			world.setBlockState(pos, getBaseBlockState(), 0);
-			for (int i = 0; i < 1 + rand.nextInt(3); i++)
-				getBaseBlock().randomDisplayTick(getBaseBlockState(), world, pos, rand);
+			world.setBlockState(pos, getBaseOreBlockState(), 0);
+			for (int i = 0; i < 1 + rand.nextInt(3); i++) {
+				getBaseOreBlock().randomDisplayTick(getBaseOreBlockState(), world, pos, rand);
+			}
+			world.setBlockState(pos, getContainerBlockState(), 0);
+			for (int i = 0; i < 1 + rand.nextInt(3); i++) {
+				getContainerBlock().randomDisplayTick(getContainerBlockState(), world, pos, rand);
+			}
 		} finally {
 			world.setBlockState(pos, state, 0);
 		}
@@ -181,7 +144,7 @@ public class BlockDenseOre extends Block {
 
 		// now call the forge events to see if our base ore block should be dropped
 		if (isValid()) {
-			IBlockState base = getBaseBlockState();
+			IBlockState base = getBaseOreBlockState();
 
 			if (base != null) {
 				chance = net.minecraftforge.event.ForgeEventFactory.fireBlockHarvesting(items, worldIn, pos, base, fortune, chance, false, harvesters.get());
@@ -205,21 +168,27 @@ public class BlockDenseOre extends Block {
 		ArrayList<ItemStack> list = new ArrayList<>();
 
 		if (isValid()) {
-			Block base = getBaseBlock();
+			Block base = getBaseOreBlock();
 
 			if (base == null)
 				return list;
 
-			IBlockState m = getBaseBlockState();
+			IBlockState m = getBaseOreBlockState();
 
 			BlockAccessSingleOverride delegate = new BlockAccessSingleOverride(world, m, pos);
 
 			Random rand = world instanceof World ? ((World) world).rand : RANDOM;
 
-			// get base drops 3 times
-			for (int j = 0; j < 3; j++) {
+
+			if (denseOre.dense) {
+				// get base drops 3 times
+				for (int j = 0; j < 3; j++) {
+					list.addAll(base.getDrops(delegate, pos, m, fortune));
+				}
+			} else {
 				list.addAll(base.getDrops(delegate, pos, m, fortune));
 			}
+
 		} else {
 			Block block = getNullOverride(world, pos);
 			BlockAccessSingleOverride delegate = new BlockAccessSingleOverride(world, block.getDefaultState(), pos);
@@ -240,26 +209,20 @@ public class BlockDenseOre extends Block {
 
 		TileEntity tile = world.getTileEntity(pos);
 		try {
-			IBlockState baseBlockState = getBaseBlockState();
+			IBlockState baseBlockState = getBaseOreBlockState();
 			world.setBlockState(pos, baseBlockState, 0);
-			float blockHardness = getBaseBlock().getBlockHardness(baseBlockState, world, pos);
+			float blockHardness1 = getBaseOreBlock().getBlockHardness(baseBlockState, world, pos);
+			IBlockState containerBlockState = getContainerBlockState();
+			world.setBlockState(pos, containerBlockState, 0);
+			float blockHardness2 = getBaseOreBlock().getBlockHardness(containerBlockState, world, pos);
 			world.setBlockState(pos, state, 0);
-			if (tile != null) {
-				NBTTagCompound tag = new NBTTagCompound();
-				tile.writeToNBT(tag);
-				TileEntity newTile = world.getTileEntity(pos);
-				newTile.readFromNBT(tag);
-			}
+			
+			
+			
 
-			return blockHardness;
+			return Math.max(blockHardness1, blockHardness2);
 		} catch (Throwable throwable) {
 			world.setBlockState(pos, state, 0);
-			if (tile != null) {
-				NBTTagCompound tag = new NBTTagCompound();
-				tile.writeToNBT(tag);
-				TileEntity newTile = world.getTileEntity(pos);
-				newTile.readFromNBT(tag);
-			}
 
 			throw Throwables.propagate(throwable);
 		}
@@ -271,7 +234,7 @@ public class BlockDenseOre extends Block {
 
 		World world = ((World) iBlockAccess);
 
-		IBlockState baseState = getBaseBlockState();
+		IBlockState baseState = getBaseOreBlockState();
 		BlockAccessSingleOverride delegate = new BlockAccessSingleOverride(iBlockAccess, baseState, pos);
 		return baseState.getBlock().getExpDrop(
 				baseState,
@@ -310,153 +273,135 @@ public class BlockDenseOre extends Block {
 
 	@Override
 	public int getHarvestLevel(@Nonnull IBlockState state) {
-		IBlockState baseState = getBaseBlockState();
-		return baseState.getBlock().getHarvestLevel(baseState);
+		IBlockState baseState = getBaseOreBlockState();
+		if (denseOre.tool.minToolLevel < 0) {
+			IBlockState containerState = getContainerBlockState();
+			return Math.max(baseState.getBlock().getHarvestLevel(baseState), containerState.getBlock().getHarvestLevel(containerState)) + denseOre.tool.toolLevelOffset;
+		} else {
+
+			return Math.max(baseState.getBlock().getHarvestLevel(baseState) + denseOre.tool.toolLevelOffset, denseOre.tool.minToolLevel);
+		}
 	}
 
 	@Override
 	public String getHarvestTool(@Nonnull IBlockState state) {
-		IBlockState baseState = getBaseBlockState();
-		return baseState.getBlock().getHarvestTool(baseState);
+		if (denseOre.tool.hasReplaceTool())return denseOre.tool.getTool();
+		IBlockState containerState = getContainerBlockState();
+		return containerState.getBlock().getHarvestTool(containerState);
 	}
 
 	@Override
 	public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
-		baseBlock.onBlockHarvested(worldIn, pos, baseBlockState, player);
+		getBaseOreBlock().onBlockHarvested(worldIn, pos, getBaseOreBlockState(), player);
+		getContainerBlock().onBlockHarvested(worldIn, pos, getContainerBlockState(), player);
 	}
 
 	@Override
 	public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
-		return baseBlock.removedByPlayer(baseBlockState, world, pos, player, willHarvest);
+		return getBaseOreBlock().removedByPlayer(getBaseOreBlockState(), world, pos, player, willHarvest);
 	}
 
 	@Override
 	public boolean canProvidePower(IBlockState state) {
-		return baseBlock.canProvidePower(baseBlockState);
+		return getBaseOreBlock().canProvidePower(getBaseOreBlockState()) ||
+		 getContainerBlock().canProvidePower(getContainerBlockState());
 	}
 
 	@Override
 	public boolean isFlammable(IBlockAccess world, BlockPos pos, EnumFacing face) {
-		return baseBlock.isFlammable(new FakeWorld(world, pos, baseBlockState), pos, face);
+		return getBaseOreBlock().isFlammable(new BlockAccessSingleOverride(world, getBaseOreBlockState(), pos), pos, face) ||
+		 getContainerBlock().isFlammable(new BlockAccessSingleOverride(world, getContainerBlockState(), pos), pos, face);
 	}
 
 	@Override
 	public int getFireSpreadSpeed(IBlockAccess world, BlockPos pos, EnumFacing face) {
-		return baseBlock.getFireSpreadSpeed(new FakeWorld(world, pos, baseBlockState), pos, face);
+		return Math.max(getBaseOreBlock().getFireSpreadSpeed(new BlockAccessSingleOverride(world, getBaseOreBlockState(), pos), pos, face),
+		  getContainerBlock().getFireSpreadSpeed(new BlockAccessSingleOverride(world, getContainerBlockState(), pos), pos, face));
 	}
 
 	@Override
 	public int getFlammability(IBlockAccess world, BlockPos pos, EnumFacing face) {
-		return baseBlock.getFlammability(new FakeWorld(world, pos, baseBlockState), pos, face);
+		return Math.max(getBaseOreBlock().getFlammability(new BlockAccessSingleOverride(world, getBaseOreBlockState(), pos), pos, face),
+				getContainerBlock().getFlammability(new BlockAccessSingleOverride(world, getContainerBlockState(), pos), pos, face));
 	}
 
 	@Override
 	public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-		return baseBlock.getWeakPower(baseBlockState, new FakeWorld(blockAccess, pos, baseBlockState), pos, side);
-	}
-
-	@Override
-	public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player) {
-		return baseBlock.canHarvestBlock(new FakeWorld(world, pos, baseBlockState), pos, player);
+		return getBaseOreBlock().getWeakPower(getBaseOreBlockState(), new BlockAccessSingleOverride(blockAccess, getBaseOreBlockState(), pos), pos, side);
 	}
 
 	@Override
 	public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
-		return baseBlock.getLightValue(baseBlockState, world, pos);
+		return Math.max(getBaseOreBlock().getLightValue(getBaseOreBlockState(), world, pos),
+		  getContainerBlock().getLightValue(getContainerBlockState(), world, pos));
 	}
 
+	private MaterialDelegate material;
 	@Override
 	public Material getMaterial(IBlockState state) {
-		return baseBlock.getMaterial(baseBlockState);
+		if (material == null || !denseOre.container.isValid()) {
+			material = new MaterialDelegate(getContainerBlock().getMaterial(getContainerBlockState()));
+		}
+		return material;
 	}
 
 	@Override
 	public SoundType getSoundType(IBlockState state, World world, BlockPos pos, @Nullable Entity entity) {
-		return baseBlock.getSoundType(baseBlockState, world, pos, entity);
+		return getContainerBlock().getSoundType(getContainerBlockState(), world, pos, entity);
 	}
 
 	@Override
 	public SoundType getSoundType() {
-		return baseBlock.getSoundType();
+		return getContainerBlock().getSoundType();
 	}
 
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		baseBlock.onBlockAdded(worldIn, pos, baseBlockState);
-		if (baseBlock instanceof BlockFalling) {
+		getBaseOreBlock().onBlockAdded(worldIn, pos, getBaseOreBlockState());
+		if (getBaseOreBlock() instanceof BlockFalling) {
+			worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+		}
+		getContainerBlock().onBlockAdded(worldIn, pos, getContainerBlockState());
+		if (getContainerBlock() instanceof BlockFalling) {
 			worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
 		}
 	}
 
 	@Override
 	public void observedNeighborChange(IBlockState observerState, World world, BlockPos observerPos, Block changedBlock, BlockPos changedBlockPos) {
-		baseBlock.observedNeighborChange(baseBlockState, world, observerPos, changedBlock, changedBlockPos);
-		if (baseBlock instanceof BlockFalling) {
+		getBaseOreBlock().observedNeighborChange(getBaseOreBlockState(), world, observerPos, changedBlock, changedBlockPos);
+		if (getBaseOreBlock() instanceof BlockFalling) {
+			world.scheduleUpdate(observerPos, this, this.tickRate(world));
+		}
+		getContainerBlock().observedNeighborChange(getContainerBlockState(), world, observerPos, changedBlock, changedBlockPos);
+		if (getContainerBlock() instanceof BlockFalling) {
 			world.scheduleUpdate(observerPos, this, this.tickRate(world));
 		}
 	}
 
 	@Override
 	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-		baseBlock.updateTick(worldIn, pos, baseBlockState, rand);
+		getBaseOreBlock().updateTick(worldIn, pos, getBaseOreBlockState(), rand);
+		getContainerBlock().updateTick(worldIn, pos, getContainerBlockState(), rand);
 	}
 
+	private WeakReference<World> lastTickRateWorldIn;
+	private int tickRateCache;
 	@Override
-	public int tickRate(World worldIn) {
-		return baseBlock.tickRate(worldIn);
+	public int tickRate(World worldIn) { //todo ensure base classes are only ticked at their multiples
+		if (lastTickRateWorldIn == null || lastTickRateWorldIn.get() != worldIn) {
+			lastTickRateWorldIn = new WeakReference<>(worldIn);
+			tickRateCache = gcd(getBaseOreBlock().tickRate(worldIn), getContainerBlock().tickRate(worldIn));
+		}
+		return tickRateCache;
 	}
 
-	private static class FakeWorld implements IBlockAccess {
-		private final IBlockAccess wrapped;
-		private final BlockPos pos;
-		private final IBlockState replaceWith;
-
-		private FakeWorld(IBlockAccess wrapped, BlockPos pos, IBlockState replaceWith) {
-			this.wrapped = wrapped;
-			this.pos = pos;
-			this.replaceWith = replaceWith;
+	static int gcd(int a, int b) {
+		while (b != 0) {
+			int t = a;
+			a = b;
+			b = t % b;
 		}
-
-		@Nullable
-		@Override
-		public TileEntity getTileEntity(BlockPos pos) {
-			return wrapped.getTileEntity(pos);
-		}
-
-		@Override
-		public int getCombinedLight(BlockPos pos, int lightValue) {
-			return wrapped.getCombinedLight(pos, lightValue);
-		}
-
-		@Override
-		public IBlockState getBlockState(BlockPos pos) {
-			if (pos.equals(this.pos)) return replaceWith;
-			return wrapped.getBlockState(pos);
-		}
-
-		@Override
-		public boolean isAirBlock(BlockPos pos) {
-			return wrapped.isAirBlock(pos);
-		}
-
-		@Override
-		public Biome getBiome(BlockPos pos) {
-			return wrapped.getBiome(pos);
-		}
-
-		@Override
-		public int getStrongPower(BlockPos pos, EnumFacing direction) {
-			return wrapped.getStrongPower(pos, direction);
-		}
-
-		@Override
-		public WorldType getWorldType() {
-			return wrapped.getWorldType();
-		}
-
-		@Override
-		public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default) {
-			return wrapped.isSideSolid(pos, side, _default);
-		}
+		return a;
 	}
 }

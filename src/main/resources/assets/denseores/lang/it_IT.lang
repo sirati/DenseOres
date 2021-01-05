@@ -1,4 +1,5 @@
-denseores.prefix=ORENAME ricco
+denseores.dense.prefix=EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME ricco
 denseores.command.help=Genera le texture usate nella cartella 'denseoretextures'.
 denseores.commandIdentify.help=Identifica il nome di registro e la texture del blocco
 denseores.commandIdentify.invalid=L'oggetto tenuto in mano non è un blocco

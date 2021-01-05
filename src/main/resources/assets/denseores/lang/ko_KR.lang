@@ -1,4 +1,5 @@
-denseores.prefix=밀집된 ORENAME
+denseores.dense.prefix=밀집된 EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME
 denseores.command.help='denseoretextures' 폴더에 생성된 텍스쳐를 출력합니다
 denseores.commandIdentify.help=블럭의 레지스트리를 식별한후 택스처를 출력합니다
 denseores.commandIdentify.invalid=현재 보유한 아이템은 블럭이 아닙니다.

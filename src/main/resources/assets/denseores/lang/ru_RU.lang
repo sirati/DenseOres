@@ -1,4 +1,5 @@
-denseores.prefix=Плотная ORENAME
+denseores.dense.prefix=Плотная EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME
 denseores.command.help=Выводит текущие сгенерированные текстуры в папку 'denseoretextures'.
 denseores.commandIdentify.help=Identifies the block's registry name and it's texture
 denseores.commandIdentify.invalid=Currently held item is not a block

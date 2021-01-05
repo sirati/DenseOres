@@ -27,6 +27,8 @@ public class ProxyClient extends Proxy {
 			public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRenderer, int mouseRelX, int mouseRelY, float tickTime) {
 				int offset = 75;
 
+				errorScreen.drawCenteredString(fontRenderer, "A problem has occurred while loading dense ores", errorScreen.width / 2, offset, 0xFFFFFF);
+				offset+=10;
 				errorScreen.drawCenteredString(fontRenderer, throwable.getMessage(), errorScreen.width / 2, offset, 0xFFFFFF);
 //				offset+=10;
 //				errorScreen.drawCenteredString(fontRenderer, String.format("The mod listed below does not want to run in Minecraft version %s", Loader.instance().getMinecraftModContainer().getVersion()), errorScreen.width / 2, offset, 0xFFFFFF);

@@ -1,4 +1,5 @@
-denseores.prefix=密集ORENAME
+denseores.dense.prefix=密集EMBETNAMEORENAME
+denseores.variant=EMBETNAMEORENAME
 denseores.command.help=将当前生成材质输出到'denseoretextures'文件夹.
 denseores.commandIdentify.help=识别这方块的注册名称及其材质
 denseores.commandIdentify.invalid=当前手里所持物品并非一个方块

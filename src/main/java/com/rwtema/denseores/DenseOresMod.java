@@ -1,6 +1,5 @@
 package com.rwtema.denseores;
 
-import com.google.common.collect.ImmutableSet;
 import com.rwtema.denseores.client.ModelGen;
 import com.rwtema.denseores.utils.LogHelper;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -27,8 +26,9 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Objects;
-import java.util.function.Consumer;
+
+import static com.rwtema.denseores.BlockStateInfo.*;
+
 @Mod(modid = DenseOresMod.MODID, name = "Dense Ores", version = DenseOresMod.VERSION, acceptedMinecraftVersions = "[1.12.2]")
 public class DenseOresMod {
 	public static final String MODID = "denseores";
@@ -36,6 +36,11 @@ public class DenseOresMod {
 
 	@SidedProxy(serverSide = "com.rwtema.denseores.Proxy", clientSide = "com.rwtema.denseores.ProxyClient")
 	public static Proxy proxy;
+
+
+	public static RuntimeException wrap(RuntimeException throwable) {
+		return proxy.wrap(throwable);
+	}
 
 	private File config;
 
@@ -58,63 +63,41 @@ public class DenseOresMod {
 			try {
 				if (key.startsWith("addDenseOre")) {
 					Class<?> messageType = message.getMessageType();
-					ResourceLocation location;
 
 					int rendertype = 0;
-					Object2ObjectMap<String, String> properties = new Object2ObjectOpenHashMap<>();
-					String underlyingBlockTexture = "blocks/stone";
+					BlockStateInfo backdrop = createMinecraft("stone");
 					switch (key.substring("addDenseOre".length())) {
 						case "Stone":
-							underlyingBlockTexture = "blocks/stone";
+							backdrop = createMinecraft("stone");
 							break;
 						case "Netherrack":
-							underlyingBlockTexture = "blocks/netherrack";
+							backdrop = createMinecraft("netherrack");
 							break;
 						case "EndStone":
-							underlyingBlockTexture = "blocks/end_stone";
+							backdrop = createMinecraft("end_stone");
 							break;
 						case "Obsidian":
-							underlyingBlockTexture = "blocks/obsidian";
+							backdrop = createMinecraft("obsidian");
 							break;
 					}
-
+					BlockStateInfo baseOre;
 					@Nullable
-					String texture = null;
+					String overrideTexture = null;
 
 					String unofficialName = null;
 
 					if (messageType == ItemStack.class) {
-						ItemStack stack = message.getItemStackValue();
-						ItemBlock itemBlock = (ItemBlock) stack.getItem();
-						IBlockState blockState = itemBlock.getBlock().getStateFromMeta(itemBlock.getMetadata(stack));
-						location = Block.REGISTRY.getNameForObject(itemBlock.getBlock());
-
-						for (IProperty<?> p:blockState.getPropertyKeys()) {
-							if (p instanceof PropertyInteger) {
-								properties.put(p.getName(), Integer.toString(blockState.getValue((PropertyInteger)p)));
-							} else if (p instanceof PropertyBool) {
-								properties.put(p.getName(), Boolean.toString(blockState.getValue((PropertyBool)p)));
-							} else {
-								properties.put(p.getName(), blockState.getValue(p).toString());
-							}
-						}
+						baseOre = read(message.getItemStackValue());
+						
+						
 					} else if (messageType == NBTTagCompound.class) {
 						NBTTagCompound nbt = message.getNBTValue();
-						location = new ResourceLocation(nbt.getString("baseBlock"));
-						NBTTagCompound propsNbt = nbt.getCompoundTag("baseBlockProperties");
-						for(String propKey:propsNbt.getKeySet()) {
-							NBTBase propNbt = propsNbt.getTag(propKey);
-							if (propNbt instanceof NBTPrimitive) {
-								properties.put(propKey, Integer.toString(((NBTPrimitive) propNbt).getInt()));
-							} else {
-								properties.put(propKey, ((NBTTagString)propNbt).getString());
-							}
+						baseOre = read(nbt.getCompoundTag("baseOre"));
+						if (nbt.hasKey("overrideTexture", Constants.NBT.TAG_COMPOUND)) {
+							backdrop = read(nbt.getCompoundTag("overrideTexture"));
 						}
-						if (nbt.hasKey("baseBlockTexture", Constants.NBT.TAG_STRING)) {
-							texture = nbt.getString("baseBlockTexture");
-						}
-						if (nbt.hasKey("underlyingBlockTexture", Constants.NBT.TAG_STRING)) {
-							underlyingBlockTexture = nbt.getString("underlyingBlockTexture");
+						if (nbt.hasKey("overrideTexture", Constants.NBT.TAG_STRING)) {
+							overrideTexture = nbt.getString("overrideTexture");
 						}
 						rendertype = nbt.getInteger("renderType");
 						unofficialName = nbt.getString("config_entry");
@@ -125,8 +108,8 @@ public class DenseOresMod {
 					if(unofficialName == null || "".equals(unofficialName)){
 						unofficialName = null;
 					}
-					DenseOresRegistry.registerOre(
-							unofficialName, location, properties, underlyingBlockTexture, texture, 0, rendertype
+					DenseOresRegistry.createOreInfo(message.getSender(),
+							unofficialName, baseOre, backdrop, baseOre, backdrop, null, overrideTexture, ToolInfo.NONE, true, 0, rendertype, -1
 					);
 				}
 			} catch (Exception err) {
@@ -145,12 +128,14 @@ public class DenseOresMod {
 		MinecraftForge.EVENT_BUS.register(worldGen);
 	}
 
-
+	public static boolean finishedStartup;
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		proxy.postInit();
 		LogHelper.info("Ores are fully densified.");
+		finishedStartup = true;
 	}
+
 
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {

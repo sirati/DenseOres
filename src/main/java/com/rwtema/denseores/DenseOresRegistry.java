@@ -3,7 +3,9 @@ package com.rwtema.denseores;
 import com.rwtema.denseores.utils.LogHelper;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
@@ -16,63 +18,92 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import static com.rwtema.denseores.BlockStateInfo.createMinecraft;
+
 @Mod.EventBusSubscriber(modid = DenseOresMod.MODID)
 public class DenseOresRegistry {
 
-	public static Map<ResourceLocation, DenseOre> ores = new HashMap<>();
+	public static Object2ObjectMap<ResourceLocation, DenseOreInfo> oreInfos = new Object2ObjectOpenHashMap<>();
+	public static ObjectSet<DenseOreInfo> vanillaOres = new ObjectOpenHashSet<>();
+	public static Object2ObjectMap<ResourceLocation, DenseOre> ores = new Object2ObjectOpenHashMap<>();
 	public static String blockPrefix = DenseOresMod.MODID;
 	// add vanilla entries (TODO: add a way to disable vanilla ores)
 	public static void initVanillaOres() {
-		registerOre("Vanilla Iron Ore", new ResourceLocation("iron_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/iron_ore", 0, 0);
-		registerOre("Vanilla Gold Ore", new ResourceLocation("gold_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/gold_ore", 0, 0);
-		registerOre("Vanilla Lapis Ore", new ResourceLocation("lapis_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/lapis_ore", 0, 0);
-		registerOre("Vanilla Diamond Ore", new ResourceLocation("diamond_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/diamond_ore", 0, 0);
-		registerOre("Vanilla Emerald Ore", new ResourceLocation("emerald_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/emerald_ore", 0, 0);
-		registerOre("Vanilla Redstone Ore", new ResourceLocation("redstone_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/redstone_ore", 0, 0);
-		registerOre("Vanilla Coal Ore", new ResourceLocation("coal_ore"), Object2ObjectMaps.emptyMap(), "blocks/stone", "blocks/coal_ore", 0, 0);
-		registerOre("Vanilla Quartz Ore", new ResourceLocation("quartz_ore"), Object2ObjectMaps.emptyMap(), "blocks/netherrack", "blocks/quartz_ore", 0, 0);
+		BlockStateInfo stone = createMinecraft("stone");
+		BlockStateInfo netherrack = createMinecraft("netherrack");
+		vanillaOres.add(createOreInfo("Vanilla", "Iron Ore", createMinecraft("iron_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla", "Gold Ore", createMinecraft("gold_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla", "Lapis Ore", createMinecraft("lapis_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla", "Diamond Ore", createMinecraft("diamond_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla", "Emerald Ore", createMinecraft("emerald_ore"), stone, null, ToolInfo.NONE, false, 0, 0, 80));
+		vanillaOres.add(createOreInfo("Vanilla", "Redstone Ore", createMinecraft("redstone_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla", "Coal Ore", createMinecraft("coal_ore"), stone, null, ToolInfo.NONE, false, 0, 0, -1));
+		vanillaOres.add(createOreInfo("Vanilla Nether", "Quartz Ore", createMinecraft("quartz_ore"), netherrack, null, ToolInfo.NONE, false, 0, 0, 160));
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void registerBiome(final RegistryEvent.Register<Biome> event) {
 		LogHelper.info("Starting ore block and item registry.");
-		for (DenseOre ore : ores.values()) {
-			LogHelper.info("Registered an ore block " + ore.unofficialName + ".");
+		for (Map.Entry<ResourceLocation, DenseOreInfo> entry : oreInfos.entrySet()) {
+			DenseOre ore = entry.getValue().register();
+			ores.put(entry.getKey(), ore);
+
+			LogHelper.info("Registered an ore block " + ore.info.configName + ".");
 			ForgeRegistries.BLOCKS.register(ore.block);
-			LogHelper.info("Registered an ore item " + ore.unofficialName + ".");
+			LogHelper.info("Registered an ore item " + ore.info.configName + ".");
 			ForgeRegistries.ITEMS.register(ore.itemBlock);
 		}
 	}
 
-	public static DenseOre registerOre(@Nullable String unofficialName, ResourceLocation baseBlock, Object2ObjectMap<String, String> properties, String underlyingBlock, @Nullable String texture, int retroGenId, int renderType) {
-		if ("".equals(baseBlock.toString()) || "minecraft:air".equals(baseBlock.toString()))
-			return null;
+	public static void registerOre(DenseOreInfo oreInfo) {
+		oreInfos.put(oreInfo.name, oreInfo);
+	}
 
-		String resourceDomain = baseBlock.getNamespace();
+	public static DenseOreInfo createOreInfo(String group, @Nullable String configName, BlockStateInfo ore, BlockStateInfo container, @Nullable String overrideTexture, ToolInfo tool, boolean dense, int retroGenId, int renderType, int maxColourDist) {
+		return createOreInfo(group, configName, ore, container, ore, container, null, overrideTexture, tool, dense, retroGenId, renderType, maxColourDist);
+	}
 
-		if (!"minecraft".equals(resourceDomain) && !Loader.isModLoaded(resourceDomain.toString().toLowerCase())) {
+
+	public static DenseOreInfo createOreInfo(String group, @Nullable String configName, BlockStateInfo ore, BlockStateInfo container, BlockStateInfo texBaseOre, BlockStateInfo texBackdrop, @Nullable BlockStateInfo texNewBackdrop, @Nullable String overrideTexture, ToolInfo tool, boolean dense, int retroGenId, int renderType, int maxColourDist) {
+
+		texNewBackdrop = texNewBackdrop == null?texBackdrop:texNewBackdrop;
+
+		String resourceDomainOre = texBaseOre.getResourceLocation().getNamespace(); //this uses texBaseOre not ore, as ore might be by this mod!
+		String resourceDomainContainer = container.getResourceLocation().getNamespace();
+
+		if (!"minecraft".equals(resourceDomainOre) && !Loader.isModLoaded(resourceDomainOre.toLowerCase())) {
 			return null;
 		}
+		StringBuilder containerNamePart = new StringBuilder();
+		if (!resourceDomainOre.equals(resourceDomainContainer)) {
+			containerNamePart.append(resourceDomainContainer).append("_");
+		}
+
+		containerNamePart.append(container.getResourceLocation().getPath()).append("_");
+		for(Map.Entry<String, String> entry:container.getFixedOrderPropertyIterator()) {
+			containerNamePart.append(entry.getValue()).append("_");
+		}
+		if (dense) {
+			containerNamePart.append("dense_");
+		}
+
 		StringBuilder propNamePart = new StringBuilder();
-		for(Map.Entry<String, String> entry:properties.entrySet()) {
+		for(Map.Entry<String, String> entry:texBaseOre.getFixedOrderPropertyIterator()) {
 			propNamePart.append("_").append(entry.getValue());
-
 		}
 
-		ResourceLocation name = new ResourceLocation("denseores", (resourceDomain + "_" + baseBlock.getPath() + propNamePart).toLowerCase(Locale.ENGLISH));
+		ResourceLocation name = new ResourceLocation("denseores", (resourceDomainOre + "_" + containerNamePart + texBaseOre.getResourceLocation().getPath() + propNamePart).toLowerCase(Locale.ENGLISH));
 
-		if ("".equals(texture)) texture = null;
+		if ("".equals(overrideTexture)) overrideTexture = null;
 
-		if (unofficialName == null) {
-			unofficialName = name.toString();
+		if (configName == null) {
+			configName = name.toString();
 		}
 
-		DenseOre ore = new DenseOre(unofficialName, name, baseBlock, properties, underlyingBlock, texture, retroGenId, renderType);
-		ores.put(name, ore);
-		return ore;
+		return new DenseOreInfo(group, configName, name, ore, container, texBaseOre, texBackdrop, texNewBackdrop, overrideTexture, tool, dense, retroGenId, renderType, maxColourDist);
 	}
 
 	//Look for valid ore dictionary references and add new ones
@@ -80,13 +111,13 @@ public class DenseOresRegistry {
 		for (DenseOre ore : ores.values()) {
 
 			if (ore.block.isValid()) {
-				for (int oreid : OreDictionary.getOreIDs(ore.newBaseStack(1))) {
+				for (int oreid : OreDictionary.getOreIDs(ore.info.newBaseStack(1))) {
 					String oreName = OreDictionary.getOreName(oreid);
 
 					if (oreName.length() > 3 && oreName.startsWith("ore") && Character.isUpperCase(oreName.charAt(3))) {
-						ore.baseOreDictionaryEntry = oreName;
+						ore.info.baseOreDictionaryEntry = oreName;
 						String newOreName = "dense" + oreName;
-						ore.oreDictionary = newOreName;
+						ore.info.oreDictionary = newOreName;
 						OreDictionary.registerOre(newOreName, new ItemStack(ore.block));
 					}
 				}

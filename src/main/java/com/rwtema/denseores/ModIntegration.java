@@ -1,5 +1,6 @@
 package com.rwtema.denseores;
 
+import com.rwtema.denseores.utils.Validate;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -8,7 +9,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
-import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -75,15 +75,15 @@ public class ModIntegration {
 		return out;
 	}
 
-	public static ItemStack getFurnace(DenseOre toSmelt, float multiplier) {
+	public static ItemStack getFurnace(DenseOreInfo toSmelt, float multiplier) {
 		ItemStack out = FurnaceRecipes.instance().getSmeltingResult(toSmelt.newBaseStack(1));
 
 		if (out.isEmpty()) {
 			out = out.copy();
 
-			if (new ResourceLocation("minecraft:lapis_ore").equals(toSmelt.baseBlock))
+			if (new ResourceLocation("minecraft:lapis_ore").equals(toSmelt.getBaseBlock()))
 				out.setCount(6);
-			else if (new ResourceLocation("minecraft:redstone_ore").equals(toSmelt.baseBlock))
+			else if (new ResourceLocation("minecraft:redstone_ore").equals(toSmelt.getBaseBlock()))
 				out.setCount(4);
 
 			multiplyStackSize(out, multiplier);
@@ -104,7 +104,7 @@ public class ModIntegration {
 
 	public static void addModIntegration() {
 		for (DenseOre ore : DenseOresRegistry.ores.values()) {
-			ItemStack output = ore.newBaseStack(1);
+			ItemStack output = ore.info.newBaseStack(1);
 			ItemStack input = new ItemStack(ore.block, 1, 0);
 
 			for (ModInterface mod : mods) {
@@ -126,7 +126,7 @@ public class ModIntegration {
 	public static class VanillaFurnace implements ModInterface {
 		@Override
 		public void registerOre(DenseOre ore, ItemStack input, ItemStack output) {
-			ItemStack out = getFurnace(ore, 3F);
+			ItemStack out = getFurnace(ore.info, 3F);
 			if (out.getItem() != null) {
 				GameRegistry.addSmelting(input, multiplyStackSize(out, 3), 1.0F);
 			}
@@ -139,7 +139,7 @@ public class ModIntegration {
 		public void registerOre(DenseOre ore, ItemStack input, ItemStack output) {
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append("<recipeGroup name=\"").append("DenseOres").append("\" >");
-			stringBuilder.append("<recipe name=\"").append("denseores_").append(ore.name.getPath()).append("\" energyCost=\"3600\" >");
+			stringBuilder.append("<recipe name=\"").append("denseores_").append(ore.info.name.getPath()).append("\" energyCost=\"3600\" >");
 			stringBuilder.append("<input>");
 			addEnderIOXMLEntryItemStack(input, stringBuilder);
 			stringBuilder.append("</input>");

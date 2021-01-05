@@ -1,4 +1,5 @@
-denseores.prefix=Hustý ORENAME
+denseores.dense.prefix=Hustý EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME
 denseores.command.help=Outputuje právě vygenerované textury do složky 'denseoretextures'.
 denseores.commandIdentify.help=Identifikuje protokol bloku a jeho texturu
 denseores.commandIdentify.invalid=Právě držený předmět není blok

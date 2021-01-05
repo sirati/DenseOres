@@ -25,6 +25,7 @@ public class ItemBlockDenseOre extends ItemBlock {
 	}
 
 	private String displayName;
+	private boolean displayNameCached;
 
 	// Adds the 'dense' qualifier to the base blocks name
 	@Nonnull
@@ -32,11 +33,17 @@ public class ItemBlockDenseOre extends ItemBlock {
 		if (!oreBlock.isValid())
 			return "Invalid Ore";
 		else {
-			if (displayName == null) {
-				ItemStack temp = oreBlock.denseOre.newBaseStack(1);
+			if (!displayNameCached) {
+				ItemStack temp = oreBlock.denseOre.texBaseOre.newStack(1);//texBaseOre on purpose
+				ItemStack tempContainer = oreBlock.denseOre.container.newStack(1);
 
-				String p = ("" + I18n.translateToLocal("denseores.dense.prefix")).trim();
-				displayName =  p.replaceFirst("ORENAME", temp.getDisplayName());
+				String p = ("" + I18n.translateToLocal( oreBlock.denseOre.dense?"denseores.dense.prefix":"denseores.variant")).trim();
+				p =  p.replaceFirst("ORENAME", temp.getDisplayName());
+				displayName =  p.replaceFirst("EMBETNAME", tempContainer.getDisplayName());
+				displayNameCached = !p.contains("denseores.dense.prefix");
+				if (!displayNameCached) {
+					return "Lang Missing:" + (oreBlock.denseOre.dense?" Dense ":" ") + tempContainer.getDisplayName() + " " + temp.getDisplayName();
+				}
 			} //todo invalidate if language changed, use LanguageMap.getLastUpdateTimeInMilliseconds NEED AT forgebot currently down
 			return displayName;
 		}

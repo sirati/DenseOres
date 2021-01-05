@@ -1,4 +1,5 @@
-denseores.prefix=ORENAME Dense 
+denseores.dense.prefix=EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME Dense
 denseores.command.help=Exporte les textures générés les plus courantes dans le dossier 'denseoretextures'. 
 denseores.commandIdentify.help=Identifie le nom de registre du bloc et sa texture 
 denseores.commandIdentify.invalid=L'élément sélectionné n'est pas de type bloc 

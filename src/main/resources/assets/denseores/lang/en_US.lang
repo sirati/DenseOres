@@ -1,4 +1,5 @@
-denseores.dense.prefix=Dense ORENAME
+denseores.dense.prefix=Dense EMBETNAME ORENAME
+denseores.variant=EMBETNAME ORENAME
 denseores.command.help=Outputs the current generated textures to the 'denseoretextures' folder.
 denseores.commandIdentify.help=Identifies the block's registry name and it's texture
 denseores.commandIdentify.invalid=Currently held item is not a block

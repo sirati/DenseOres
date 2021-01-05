@@ -1,40 +1,40 @@
-Mod,Registry name,Display name,Backdrop,Properties,
-appliedenergistic,appliedenergistics2:charged_quartz_ore,Charged Certus Quartz Ore,blocks/stone,,
-appliedenergistic,appliedenergistics2:quartz_ore,Certus Quartz Ore,blocks/stone,,
-biomesoplenty,biomesoplenty:biome_block,Biome Essence Ore,blocks/end_stone,,
-biomesoplenty,biomesoplenty:gem_ore,Ender Amethyst Ore,blocks/end_stone,variant,amethyst
-biomesoplenty,biomesoplenty:gem_ore,Ruby Ore,blocks/stone,variant,ruby
-biomesoplenty,biomesoplenty:gem_ore,Peridot Ore,blocks/stone,variant,peridot
-biomesoplenty,biomesoplenty:gem_ore,Topaz Ore,blocks/stone,variant,topaz
-biomesoplenty,biomesoplenty:gem_ore,Tanzanite Ore,blocks/stone,variant,tanzanite
-biomesoplenty,biomesoplenty:gem_ore,Malachite Ore,blocks/stone,variant,malachite
-enderore,enderore:ore_ender,Ender Ore,blocks/stone,,
-thaumcraft,thaumcraft:ore_cinnabar,Cinnabar Ore,blocks/stone,,
-thaumcraft,thaumcraft:ore_quartz,Quartz Ore,blocks/stone,,
-thermalfoundation,thermalfoundation:ore,Copper Ore,blocks/stone,type,copper
-thermalfoundation,thermalfoundation:ore,Tin Ore,blocks/stone,type,tin
-thermalfoundation,thermalfoundation:ore,Silver Ore,blocks/stone,type,silver
-thermalfoundation,thermalfoundation:ore,Lead Ore,blocks/stone,type,lead
-thermalfoundation,thermalfoundation:ore,Aluminum Ore,blocks/stone,type,aluminum
-thermalfoundation,thermalfoundation:ore,Nickel Ore,blocks/stone,type,nickel
-thermalfoundation,thermalfoundation:ore_fluid,Destabilized Redstone Ore,blocks/stone,type,redstone
-thermalfoundation,thermalfoundation:ore_fluid,Energized Netherrack,blocks/netherrack,type,glowstone
-thermalfoundation,thermalfoundation:ore_fluid,Resonant End Stone,blocks/end_stone,type,ender
-thermalfoundation,thermalfoundation:ore_fluid,Sand Crude Oil,blocks/sand,type,crude_oil_sand
-thermalfoundation,thermalfoundation:ore_fluid,Red Sand Crude Oil,blocks/red_sand,type,crude_oil_red_sand
-thermalfoundation,thermalfoundation:ore_fluid,Gravel Sand Crude Oil,blocks/gravel,type,crude_oil_gravel
-tinkers construct,tconstruct:ore,Cobalt Ore,blocks/netherrack,type,cobalt
-tinkers construct,tconstruct:ore,Ardite Ore,blocks/netherrack,type,ardite
-gravelores,gravelores:aluminum_gravel_ore,Aluminum Gravel Ore,blocks/gravel,,
-gravelores,gravelores:coal_gravel_ore,Coal Gravel Ore,blocks/gravel,,
-gravelores,gravelores:copper_gravel_ore,Copper Gravel Ore,blocks/gravel,,
-gravelores,gravelores:diamond_gravel_ore,Diamond Gravel Ore,blocks/gravel,,
-gravelores,gravelores:emerald_gravel_ore,Emerald Gravel Ore,blocks/gravel,,
-gravelores,gravelores:gold_gravel_ore,Gold Gravel Ore,blocks/gravel,,
-gravelores,gravelores:iron_gravel_ore,Iron Gravel Ore,blocks/gravel,,
-gravelores,gravelores:lapis_gravel_ore,Lapis Gravel Ore,blocks/gravel,,
-gravelores,gravelores:lead_gravel_ore,Lead Gravel Ore,blocks/gravel,,
-gravelores,gravelores:nickel_gravel_ore,Nickel Gravel Ore,blocks/gravel,,
-gravelores,gravelores:redstone_gravel_ore,Redstone Gravel Ore,blocks/gravel,,
-gravelores,gravelores:silver_gravel_ore,Silver Gravel Ore,blocks/gravel,,
-gravelores,gravelores:tin_gravel_ore,Tin Gravel Ore,blocks/gravel,,
+Mod,Registry name,Properties,,,Display name,Backdrop,,,
+appliedenergistic,appliedenergistics2:charged_quartz_ore,,,,Charged Certus Quartz Ore,minecraft:stone,variant,S,stone
+appliedenergistic,appliedenergistics2:quartz_ore,,,,Certus Quartz Ore,minecraft:stone,variant,S,stone
+biomesoplenty end,biomesoplenty:biome_block,,,,Biome Essence Ore,minecraft:end_stone,,,
+biomesoplenty end,biomesoplenty:gem_ore,variant,S,amethyst,Ender Amethyst Ore,minecraft:end_stone,,,
+biomesoplenty,biomesoplenty:gem_ore,variant,S,ruby,Ruby Ore,minecraft:stone,variant,S,stone
+biomesoplenty,biomesoplenty:gem_ore,variant,S,peridot,Peridot Ore,minecraft:stone,variant,S,stone
+biomesoplenty,biomesoplenty:gem_ore,variant,S,topaz,Topaz Ore,minecraft:stone,variant,S,stone
+biomesoplenty,biomesoplenty:gem_ore,variant,S,tanzanite,Tanzanite Ore,minecraft:stone,variant,S,stone
+biomesoplenty,biomesoplenty:gem_ore,variant,S,malachite,Malachite Ore,minecraft:stone,variant,S,stone
+enderore,enderore:ore_ender,,,,Ender Ore,minecraft:stone,variant,S,stone
+thaumcraft,thaumcraft:ore_cinnabar,,,,Cinnabar Ore,minecraft:stone,variant,S,stone
+thaumcraft,thaumcraft:ore_quartz,,,,Quartz Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,copper,Copper Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,tin,Tin Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,silver,Silver Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,lead,Lead Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,aluminum,Aluminum Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore,type,S,nickel,Nickel Ore,minecraft:stone,variant,S,stone
+thermalfoundation,thermalfoundation:ore_fluid,type,S,redstone,Destabilized Redstone Ore,minecraft:stone,variant,S,stone
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,glowstone,Energized Netherrack,minecraft:netherrack,,,
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,ender,Resonant End Stone,minecraft:end_stone,,,
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_sand,Sand Crude Oil,minecraft:sand,,,
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_red_sand,Red Sand Crude Oil,minecraft:red_sand,,,
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_gravel,Gravel Sand Crude Oil,minecraft:gravel,,,
+tinkers construct,tconstruct:ore,type,S,cobalt,Cobalt Ore,minecraft:netherrack,,,
+tinkers construct,tconstruct:ore,type,S,ardite,Ardite Ore,minecraft:netherrack,,,
+gravelores,gravelores:aluminum_gravel_ore,,,,Aluminum Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:coal_gravel_ore,,,,Coal Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:copper_gravel_ore,,,,Copper Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:diamond_gravel_ore,,,,Diamond Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:emerald_gravel_ore,,,,Emerald Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:gold_gravel_ore,,,,Gold Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:iron_gravel_ore,,,,Iron Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:lapis_gravel_ore,,,,Lapis Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:lead_gravel_ore,,,,Lead Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:nickel_gravel_ore,,,,Nickel Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:redstone_gravel_ore,,,,Redstone Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:silver_gravel_ore,,,,Silver Gravel Ore,minecraft:gravel,,,
+gravelores,gravelores:tin_gravel_ore,,,,Tin Gravel Ore,minecraft:gravel,,,

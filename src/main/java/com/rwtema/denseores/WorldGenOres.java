@@ -98,7 +98,7 @@ public class WorldGenOres implements IWorldGenerator {
 		rand.setSeed(chunkSeed);
 
 		for (DenseOre denseOre : DenseOresRegistry.ores.values()) {
-			if (!rgen.hasKey(denseOre.name.toString()) || denseOre.retroGenId != rgen.getInteger(denseOre.name.toString())) {
+			if (!rgen.hasKey(denseOre.info.name.toString()) || denseOre.info.retroGenId != rgen.getInteger(denseOre.info.name.toString())) {
 				genChunk(event.getChunk(), rand, denseOre, true);
 				regen = true;
 			}
@@ -114,7 +114,7 @@ public class WorldGenOres implements IWorldGenerator {
 		NBTTagCompound chunkData = event.getData();
 		NBTTagCompound rgen = chunkData.getCompoundTag(DENSEORES);
 
-		for (DenseOre denseOre : DenseOresRegistry.ores.values()) {
+		for (DenseOreInfo denseOre : DenseOresRegistry.oreInfos.values()) {
 			rgen.setInteger(denseOre.name.toString(), denseOre.retroGenId);
 		}
 

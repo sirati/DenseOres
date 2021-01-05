@@ -134,9 +134,9 @@ public class WorldGenAnalyser extends CommandBase implements IWorldGenerator {
 
 			double k = 0;
 			for (DenseOre denseOre : DenseOresRegistry.ores.values()) {
-				addChatMessage(sender, new TextComponentString("Ore " + denseOre.name));
+				addChatMessage(sender, new TextComponentString("Ore " + denseOre.info.name));
 				double t = 0;
-				IBlockState baseBlockState = denseOre.block.getBaseBlockState();
+				IBlockState baseBlockState = denseOre.block.getBaseOreBlockState();
 				if (states.containsKey(baseBlockState)) {
 					double v = (double) states.get(baseBlockState) / n;
 					k += v;
