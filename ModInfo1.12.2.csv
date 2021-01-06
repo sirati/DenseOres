@@ -21,7 +21,7 @@ thermalfoundation,thermalfoundation:ore_fluid,type,S,redstone,Destabilized Redst
 thermalfoundation special,thermalfoundation:ore_fluid,type,S,glowstone,Energized Netherrack,minecraft:netherrack,,,
 thermalfoundation special,thermalfoundation:ore_fluid,type,S,ender,Resonant End Stone,minecraft:end_stone,,,
 thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_sand,Sand Crude Oil,minecraft:sand,,,
-thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_red_sand,Red Sand Crude Oil,minecraft:red_sand,,,
+thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_red_sand,Red Sand Crude Oil,minecraft:sand,variant,red_sand
 thermalfoundation special,thermalfoundation:ore_fluid,type,S,crude_oil_gravel,Gravel Sand Crude Oil,minecraft:gravel,,,
 tinkers construct,tconstruct:ore,type,S,cobalt,Cobalt Ore,minecraft:netherrack,,,
 tinkers construct,tconstruct:ore,type,S,ardite,Ardite Ore,minecraft:netherrack,,,
