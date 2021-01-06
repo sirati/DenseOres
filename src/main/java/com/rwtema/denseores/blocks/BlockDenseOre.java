@@ -3,6 +3,8 @@ package com.rwtema.denseores.blocks;
 
 import com.google.common.base.Throwables;
 import com.rwtema.denseores.DenseOreInfo;
+import com.rwtema.denseores.DenseOresRegistry;
+import com.rwtema.denseores.blockaccess.BlockAccessDelegate;
 import com.rwtema.denseores.blockaccess.BlockAccessSingleOverride;
 import com.rwtema.denseores.material.MaterialDelegate;
 import net.minecraft.block.Block;
@@ -177,16 +179,30 @@ public class BlockDenseOre extends Block {
 
 			BlockAccessSingleOverride delegate = new BlockAccessSingleOverride(world, m, pos);
 
-			Random rand = world instanceof World ? ((World) world).rand : RANDOM;
 
 
 			if (denseOre.dense) {
+				Random rand = world instanceof World ? ((World) world).rand : RANDOM;
+				int i = rand.nextInt(fortune + 2) - 1;
+
+				if (i < 0)
+				{
+					i = 0;
+				}
+
+				i += 1;
+				i*=3;
 				// get base drops 3 times
-				for (int j = 0; j < 3; j++) {
+				for (int j = 0; j < i; j++) {
 					list.addAll(base.getDrops(delegate, pos, m, fortune));
 				}
 			} else {
 				list.addAll(base.getDrops(delegate, pos, m, fortune));
+			}
+			if (DenseOresRegistry.dropContainer && !(world instanceof BlockAccessDelegate)) {
+				m = getContainerBlockState();
+				delegate = new BlockAccessSingleOverride(world, m, pos);
+				list.addAll(getContainerBlock().getDrops(delegate, pos, m, fortune));
 			}
 
 		} else {

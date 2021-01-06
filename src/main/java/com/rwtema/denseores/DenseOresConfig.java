@@ -64,6 +64,9 @@ public class DenseOresConfig {
 			config.getStringList(PARENTS, cat, vanillaGroupsArr, "The list of vanilla groups");
 		}
 
+		boolean overrideVanilla = config.getBoolean("overrideVanilla", "settings", true, "This needs to be set to true for custom ore generation to work");
+		DenseOresRegistry.dropContainer = config.getBoolean("dropContainer", "settings", true, "If true drops not only the ore but also the stone");
+
 
 		ObjectSet<String> groupKeys = new ObjectOpenHashSet<>();
 		Object2ObjectMap<String, ObjectSet<String>> groupOres = new Object2ObjectOpenHashMap<>();
@@ -126,6 +129,14 @@ public class DenseOresConfig {
 			Validate.isFalse(group.isProvided, () -> String.format("A provided group cannot be active, but group %s is marked as active!\n active groups: %s\nactivatable groups: %s", group.getName(), Arrays.toString(activeGroups), Arrays.toString(activatableGroups)));
 			for (DenseOreInfo ore: group.getOres()) {
 				DenseOresRegistry.registerOre(ore);
+			}
+		}
+
+		for (OreGroup group:groups.values()) {
+			if (group.isProvided && overrideVanilla) {
+				for (DenseOreInfo ore: group.getOres()) {
+					DenseOresRegistry.registerOre(ore);
+				}
 			}
 		}
 

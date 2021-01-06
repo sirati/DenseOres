@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rwtema.denseores.DenseOresMod.wrap;
 
@@ -84,4 +85,16 @@ public class BlockStateReference extends BlockStateInfo {
         return result;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BlockStateReference that = (BlockStateReference) o;
+        return Objects.equals(getBlockState(), that.getBlockState());
+    }
+
+    @Override
+    public int hashCode() {
+        return getBlockState().hashCode();
+    }
 }

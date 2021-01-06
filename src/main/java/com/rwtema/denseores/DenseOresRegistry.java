@@ -1,11 +1,13 @@
 package com.rwtema.denseores;
 
+import com.rwtema.denseores.ores.OreLookup;
 import com.rwtema.denseores.utils.LogHelper;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
@@ -29,7 +31,10 @@ public class DenseOresRegistry {
 	public static Object2ObjectMap<ResourceLocation, DenseOreInfo> oreInfos = new Object2ObjectOpenHashMap<>();
 	public static ObjectSet<DenseOreInfo> vanillaOres = new ObjectOpenHashSet<>();
 	public static Object2ObjectMap<ResourceLocation, DenseOre> ores = new Object2ObjectOpenHashMap<>();
+	public static Object2ObjectMap<IBlockState, OreLookup> oreVariantLookup = new Object2ObjectOpenHashMap<>();
+	public static ObjectSet<IBlockState> containers = new ObjectOpenHashSet<>();
 	public static String blockPrefix = DenseOresMod.MODID;
+	public static boolean dropContainer;
 	// add vanilla entries (TODO: add a way to disable vanilla ores)
 	public static void initVanillaOres() {
 		BlockStateInfo stone = createMinecraft("stone");
@@ -123,6 +128,17 @@ public class DenseOresRegistry {
 				}
 			}
 		}
+	}
+
+	public static void buildLookup() {
+		for (DenseOre ore:ores.values()) {
+			IBlockState base = ore.info.texBaseOre.getBlockState();
+			OreLookup lookup = oreVariantLookup.computeIfAbsent(base, OreLookup::new);
+			IBlockState container = ore.info.container.getBlockState();
+			lookup.setVariant(container, ore.block.getDefaultState(), ore.info.dense);
+			containers.add(container);
+		}
+
 	}
 
 

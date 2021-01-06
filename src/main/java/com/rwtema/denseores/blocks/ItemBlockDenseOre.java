@@ -40,7 +40,7 @@ public class ItemBlockDenseOre extends ItemBlock {
 				String p = ("" + I18n.translateToLocal( oreBlock.denseOre.dense?"denseores.dense.prefix":"denseores.variant")).trim();
 				p =  p.replaceFirst("ORENAME", temp.getDisplayName());
 				displayName =  p.replaceFirst("EMBETNAME", tempContainer.getDisplayName());
-				displayNameCached = !p.contains("denseores.dense.prefix");
+				displayNameCached = !p.contains("denseores");
 				if (!displayNameCached) {
 					return "Lang Missing:" + (oreBlock.denseOre.dense?" Dense ":" ") + tempContainer.getDisplayName() + " " + temp.getDisplayName();
 				}

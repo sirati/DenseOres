@@ -17,8 +17,16 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'eclipse'
 
 //Only edit below this line, the above code adds and enables the nessasary things for Forge to be setup.
+
+
+def secrets = new Properties()
+file("./secrets.properties").withInputStream { //add your github token there!!
+    stream -> secrets.load(stream)
+}
+println ("Github username found:" + secrets.getProperty("GITHUB-USERNAME"))
 
 
 version = "1.1.0.1-alpha2"
@@ -72,6 +80,27 @@ minecraft {
     }
 }
 
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/opencubicchunks/cubicworldgen")
+        credentials {
+            username = project.findProperty("gpr.user") ?: secrets.getProperty("GITHUB-USERNAME")
+            password = project.findProperty("gpr.key") ?: secrets.getProperty("GITHUB-TOKEN")
+        }
+    }
+    maven { setUrl("http://repo.spongepowered.org/maven") }
+    maven { setUrl("https://minecraft.curseforge.com/api/maven/") }
+    maven { setUrl("https://repo.elytradev.com") } // jankson snapshot
+}
+
+
 dependencies {
     minecraft ('net.minecraftforge:forge:1.12.2-14.23.5.2854')  {
         exclude group: 'org.apache.commons', module: 'commons-lang3' //we are using out own validate
@@ -80,15 +109,15 @@ dependencies {
         exclude group: 'org.apache.commons', module: 'commons-lang3'
     }
     annotationProcessor 'org.spongepowered:mixin:0.8:processor'
-}
-
-
-repositories {
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    compileOnly("io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT") {
+        exclude module: "mixin"
+    }
+    compileOnly (('io.github.opencubicchunks:cubicworldgen:1.12.2-0.0.138.0-SNAPSHOT')) {
+        exclude module: "mixin"
     }
 }
+
+
 
 processResources
 {
@@ -123,12 +152,18 @@ jar {
     )
 }
 
-// Create deobf dev jars
+
+
+task srcJar(type: Jar) {
+    from sourceSets.main.java
+    classifier = 'sources'
+}
+
 task deobfJar(type: Jar) {
     from sourceSets.main.output
     classifier = 'deobf'
 }
 
 artifacts {
-    archives deobfJar
+    archives srcJar, deobfJar
 }

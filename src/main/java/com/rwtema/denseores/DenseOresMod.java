@@ -1,6 +1,7 @@
 package com.rwtema.denseores;
 
 import com.rwtema.denseores.client.ModelGen;
+import com.rwtema.denseores.cubicchunks.CCHelper;
 import com.rwtema.denseores.utils.LogHelper;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -29,10 +30,11 @@ import java.io.File;
 
 import static com.rwtema.denseores.BlockStateInfo.*;
 
-@Mod(modid = DenseOresMod.MODID, name = "Dense Ores", version = DenseOresMod.VERSION, acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = DenseOresMod.MODID, name = "Dense Ores", version = DenseOresMod.VERSION, acceptedMinecraftVersions = "[1.12.2]", dependencies = DenseOresMod.DEPENCIES)
 public class DenseOresMod {
 	public static final String MODID = "denseores";
 	public static final String VERSION = "1.0";
+	public static final String DEPENCIES = "required:cubicchunks@[0.0.989.0,);required:cubicgen@[0.0.67.0,);required:forge@[14.23.3.2658,)";
 
 	@SidedProxy(serverSide = "com.rwtema.denseores.Proxy", clientSide = "com.rwtema.denseores.ProxyClient")
 	public static Proxy proxy;
@@ -134,6 +136,10 @@ public class DenseOresMod {
 		proxy.postInit();
 		LogHelper.info("Ores are fully densified.");
 		finishedStartup = true;
+		if (Loader.isModLoaded("cubicchunks")) {
+			CCHelper.register();
+		}
+		DenseOresRegistry.buildLookup();
 	}
 
 
