@@ -46,7 +46,7 @@ public class DenseOresMod {
 
 	private File config;
 
-	public DenseOresMod() {
+	public void DenseOresMod() {
 		ModelGen.register();
 	}
 
