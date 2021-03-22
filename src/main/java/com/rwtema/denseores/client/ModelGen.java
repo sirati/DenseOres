@@ -141,7 +141,9 @@ public class ModelGen {
 
 		}
 	}
-
+	
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	@SideOnly(Side.CLIENT)
 	public static void registerMesh() {
 
 		LogHelper.info("registerMesh waw called, mixin worked");
